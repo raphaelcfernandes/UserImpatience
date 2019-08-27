@@ -6,7 +6,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.IBinder
+import android.util.Log
 import com.android.battery.saver.database.AppDbHelper
+import com.android.battery.saver.logger.Logger
 import com.android.battery.saver.managers.AppManager
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit.SECONDS
@@ -25,6 +27,7 @@ class BackgroundService : Service() {
         super.onCreate()
         appDbHelper = AppDbHelper(applicationContext)
         val filter = IntentFilter(Intent.ACTION_SCREEN_ON)
+        filter.addAction("com.android.battery.saver.REQUESTED_MORE_CPU")
         filter.addAction(Intent.ACTION_SCREEN_OFF)
         registerReceiver(broadcastRcv, filter)
     }
@@ -48,6 +51,13 @@ class BackgroundService : Service() {
                     if (lastApp != currentApp) {
                         //Save last app if any change to its values
                         //Load new app cpu values
+                        //Check if last app changed its configuration
+                        //Save last app to db
+                        //Check if actual app exists in db
+                            //if exists
+                                //load actual app config
+                            //else
+                                //set cpu to maximum and start decreasing
                         lastApp = currentApp
                     }
                 }
@@ -55,8 +65,7 @@ class BackgroundService : Service() {
                 //if app in excluded Set, then we need to do something
                 //Decrease speed? Set to a given speed?
             } else {
-                //Need to save the state of the last running app
-
+                //Need to save the state of the last running app if it changed
                 //Set isScreenOn to off
                 isScreenOn = false
                 //Set the cpu to min possible
@@ -72,7 +81,8 @@ class BackgroundService : Service() {
             "com.android.launcher",
             "com.google.android.googlequicksearchbox",
             "com.android.systemui",
-            "android"
+            "android",
+            "com.android.battery.saver"
         )
         return excludedAppsArrayList.toHashSet()
     }
@@ -80,11 +90,13 @@ class BackgroundService : Service() {
     private val broadcastRcv = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if (intent.action == Intent.ACTION_SCREEN_OFF) {
-                //changeDetector = false;
                 isScreenOn = false
             }
             if (intent.action == Intent.ACTION_SCREEN_ON) {
                 isScreenOn = true
+            }
+            if (intent.action == "com.android.battery.saver.REQUESTED_MORE_CPU") {
+                Log.d(Logger.DEBUG, "GOTCHA")
             }
         }
     }

@@ -9,4 +9,5 @@ data class CpuCoreModel(val number: Int,
                         val frequencies: ArrayList<Int>,
                         var currentFrequency: Int,
                         var governor: String,
-                        var status: Boolean)
+                        var status: Boolean,
+                        var threshold: Int)

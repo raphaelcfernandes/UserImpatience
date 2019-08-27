@@ -36,7 +36,7 @@ object CpuManager {
             writeGovernorToCore(i, "userspace")
             //Retrieve current frequency
             val curFreq = getCurrentFrequencyFromCore(i)
-            cpuCores[i] = CpuCoreModel(i, frequencies, curFreq, "userspace", true)
+            cpuCores[i] = CpuCoreModel(i, frequencies, curFreq, "userspace", true, 0)
             totalOfFrequencies += frequencies.size
         }
         getSumNumberCore()

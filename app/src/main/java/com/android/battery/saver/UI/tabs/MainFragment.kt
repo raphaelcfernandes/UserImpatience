@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.android.battery.saver.NotificationBar
 import com.android.battery.saver.R
 import com.android.battery.saver.database.AppDbHelper
 import com.android.battery.saver.managers.CpuManager
@@ -14,12 +15,15 @@ import com.android.battery.saver.services.BackgroundService
 class MainFragment : Fragment() {
     private var cpu = CpuManager
     private lateinit var db: AppDbHelper
+    private lateinit var n: NotificationBar
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_main, container, false)
+        n = NotificationBar()
+        n.createSpeedUpNotification(context!!)
         activity?.startService(
             Intent(
                 activity,
