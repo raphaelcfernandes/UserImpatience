@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Android-Battery-Saver</string>
+    <string name="settings">Settings</string>
+    <string name="usageStats">Usage Stats</string>
+    <string name="mainFragment">Main</string>
+    <string name="activate">Activate</string>
+    <string name="deactivate">Dectivate</string>
+    <string name="main_menu">Main Menu</string>
+    <string name="bubble_button">Bubble Button</string>
+    <string name="notification_bar">Notification Bar</string>
+</resources>
