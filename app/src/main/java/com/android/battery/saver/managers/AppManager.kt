@@ -11,9 +11,9 @@ object AppManager {
         val arr = getArrayOfUsageStats(context)
         val mySortedMap = TreeMap<Long, UsageStats>()
         for (usageStats in arr) {
-            mySortedMap[usageStats.getLastTimeUsed()] = usageStats
+            mySortedMap[usageStats.lastTimeUsed] = usageStats
         }
-        return mySortedMap[mySortedMap.lastKey()]!!.getPackageName()
+        return mySortedMap[mySortedMap.lastKey()]!!.packageName
     }
 
     private fun getArrayOfUsageStats(context: Context): ArrayList<UsageStats> {

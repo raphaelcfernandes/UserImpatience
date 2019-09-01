@@ -7,11 +7,20 @@ import android.provider.BaseColumns
  * Contains schema (table name and column names) for program understandability.
  */
 object DBContract {
-    object usageInfo : BaseColumns {
-        val TABLE_NAME = "appCollection"
-        val APP_NAME = "APP_NAME"
-        val BRIGHTNESS = "APP_BRIGHTNESS_LEVEL"
-        val CORE = "CPU"
-        val THRESHOLD = "THRESH"
+    object UsageInfo : BaseColumns {
+        const val TABLE_NAME = "appCollection"
+        const val APP_NAME = "APP_NAME"
+        const val BRIGHTNESS = "APP_BRIGHTNESS_LEVEL"
+        const val CPU = "CPU"
+        const val THRESHOLD = "THRESH"
+    }
+
+    object LogInfo : BaseColumns {
+        const val TABLE_NAME = "logs"
+        const val APP_NAME = "APP_NAME"
+        const val ID = "ID"
+        const val TIMESTAMP = "TIMESTAMP"
+        const val CPU = "CPU"
+        const val BATTERY = "BATTERY"
     }
 }

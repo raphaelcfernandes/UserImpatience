@@ -30,7 +30,7 @@ class PageHolderAdapter(context: Context, fm: FragmentManager) : FragmentStatePa
     }
 
     override fun getPageTitle(position: Int): CharSequence {
-        return mContext.getString(tabsArrayList.get(position))
+        return mContext.getString(tabsArrayList[position])
     }
 
 

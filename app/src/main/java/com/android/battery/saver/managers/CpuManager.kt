@@ -40,7 +40,6 @@ object CpuManager {
             totalOfFrequencies += frequencies.size
         }
         getSumNumberCore()
-
     }
 
     /**
