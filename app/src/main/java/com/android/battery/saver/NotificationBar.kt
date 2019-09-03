@@ -7,7 +7,7 @@ import android.content.Intent
 import androidx.core.app.NotificationCompat
 
 class NotificationBar {
-    private val speedUpIntent = Intent("com.android.battery.saver.REQUESTED_MORE_CPU")
+    private val speedUpIntent = Intent("com.android.battery.saver.USER_COMPLAINED")
 
     //This method creates the notification when the app is started
     fun createSpeedUpNotification(context: Context) {

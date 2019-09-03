@@ -17,6 +17,23 @@ object CpuManager {
         start()
     }
 
+    fun getFrequencyFromCore(core: Int): Int {
+        return cpuCores[core]!!.currentFrequency
+    }
+
+    fun getThresholdFromCore(core: Int): Int {
+        return cpuCores[core]!!.threshold
+    }
+
+    fun setAllCoresToMax() {
+        for(i in 0 until numberOfCores) {
+            if(!cpuCores[i]!!.status){
+                turnCoreOn(i)
+            }
+            setCoreFrequency(i, cpuCores[i]!!.frequencies[cpuCores[i]!!.frequencies.size-1])
+        }
+    }
+
     fun stop() {
         returnDeviceControlToAndroid()
     }
@@ -35,7 +52,7 @@ object CpuManager {
             //Write userspace to core
             writeGovernorToCore(i, "userspace")
             //Retrieve current frequency
-            val curFreq = getCurrentFrequencyFromCore(i)
+            val curFreq = getCurrentFrequencyFromInteralFile(i)
             cpuCores[i] = CpuCoreModel(i, frequencies, curFreq, "userspace", true, 0)
             totalOfFrequencies += frequencies.size
         }
@@ -80,7 +97,7 @@ object CpuManager {
         return status.toBoolean()
     }
 
-    private fun getCurrentFrequencyFromCore(core: Int): Int {
+    private fun getCurrentFrequencyFromInteralFile(core: Int): Int {
         val proc = Runtime.getRuntime().exec(
             arrayOf(
                 "su", "-c",

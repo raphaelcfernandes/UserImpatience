@@ -29,7 +29,7 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
-                <action android:name="com.android.battery.saver.REQUESTED_MORE_CPU"/>
+                <action android:name="com.android.battery.saver.USER_COMPLAINED"/>
             </intent-filter>
         </activity>
         <activity
