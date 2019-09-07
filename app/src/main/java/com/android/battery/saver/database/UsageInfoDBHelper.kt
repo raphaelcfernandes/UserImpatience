@@ -9,7 +9,7 @@ import com.android.battery.saver.managers.CpuManager
 
 
 class UsageInfoDBHelper(context: Context) :
-    SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+        SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     override fun onCreate(db: SQLiteDatabase?) {
         db?.execSQL(createTable())
@@ -28,9 +28,9 @@ class UsageInfoDBHelper(context: Context) :
     }
 
     fun insertAppConfiguration(
-        appName: String, brightnessLevel: Int,
-        coreFrequencies: ArrayList<Int>,
-        coreThresholds: ArrayList<Int>
+            appName: String, brightnessLevel: Int,
+            coreFrequencies: ArrayList<Int>,
+            coreThresholds: ArrayList<Int>
     ) {
         val db = writableDatabase
         val contentValues = ContentValues()
@@ -48,8 +48,8 @@ class UsageInfoDBHelper(context: Context) :
     private fun checkIfDataAlreadyExists(appName: String): Boolean {
         val db = this.readableDatabase
         val cursor = db.rawQuery(
-            "SELECT * FROM " + DBContract.UsageInfo.TABLE_NAME + " WHERE "
-                    + DBContract.UsageInfo.APP_NAME + " LIKE ?", arrayOf(appName)
+                "SELECT * FROM " + DBContract.UsageInfo.TABLE_NAME + " WHERE "
+                        + DBContract.UsageInfo.APP_NAME + " LIKE ?", arrayOf(appName)
         )
         if (cursor.count <= 0) {
             cursor.close()
@@ -63,45 +63,42 @@ class UsageInfoDBHelper(context: Context) :
      * Updates a specific app with new values
      */
     fun updateAppConfiguration(
-        appName: String,
-        brightnessLevel: Int,
-        coreFrequencies: ArrayList<Int>,
-        coreThresholds: ArrayList<Int>
+            appName: String,
+            brightnessLevel: Int,
+            coreFrequencies: ArrayList<Int>,
+            coreThresholds: ArrayList<Int>
     ) {
-        if (!checkIfDataAlreadyExists(appName))
-            insertAppConfiguration(appName, brightnessLevel, coreFrequencies, coreThresholds)
-        else {
-            val db = this.writableDatabase
-            val contentValues = ContentValues()
-            contentValues.put(DBContract.UsageInfo.BRIGHTNESS, brightnessLevel)
-            for (x in coreFrequencies.indices) {
-                contentValues.put(DBContract.UsageInfo.CPU + x, coreFrequencies[x])
-            }
-            for (x in coreThresholds.indices) {
-                contentValues.put(DBContract.UsageInfo.THRESHOLD + x, coreThresholds[x])
-            }
-            db.update(
+
+        val db = this.writableDatabase
+        val contentValues = ContentValues()
+        contentValues.put(DBContract.UsageInfo.BRIGHTNESS, brightnessLevel)
+        for (x in coreFrequencies.indices) {
+            contentValues.put(DBContract.UsageInfo.CPU + x, coreFrequencies[x])
+        }
+        for (x in coreThresholds.indices) {
+            contentValues.put(DBContract.UsageInfo.THRESHOLD + x, coreThresholds[x])
+        }
+        db.update(
                 DBContract.UsageInfo.TABLE_NAME,
                 contentValues,
                 "appName = ? ",
                 arrayOf(appName)
-            )
-        }
+        )
     }
 
     fun getAppData(AppName: String): Cursor {
         val db = this.readableDatabase
         return db.rawQuery(
-            "SELECT * FROM " + DBContract.UsageInfo.TABLE_NAME + " WHERE "
-                    + DBContract.UsageInfo.APP_NAME + " LIKE ?", arrayOf(AppName)
+                "SELECT * FROM " + DBContract.UsageInfo.TABLE_NAME + " WHERE "
+                        + DBContract.UsageInfo.APP_NAME + " LIKE ?", arrayOf(AppName)
         )
     }
 
     private fun createTable(): String {
         val createTable = StringBuilder()
         createTable.append(
-            "CREATE TABLE " + DBContract.UsageInfo.TABLE_NAME + " (" + DBContract.UsageInfo.APP_NAME
-                    + " TEXT PRIMARY KEY, " + DBContract.UsageInfo.BRIGHTNESS + " INT, "
+                "CREATE TABLE " + DBContract.UsageInfo.TABLE_NAME + " (" + DBContract.UsageInfo.APP_NAME
+                        + " TEXT PRIMARY KEY, " + DBContract.UsageInfo.BRIGHTNESS + " INT, "
         )
         for (i in 0 until CpuManager.getNumberOfCores()) {
             createTable.append(DBContract.UsageInfo.CPU).append(i).append(" INT, ")

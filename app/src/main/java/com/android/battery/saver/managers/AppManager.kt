@@ -3,17 +3,34 @@ package com.android.battery.saver.managers
 import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
 import android.content.Context
+import com.android.battery.saver.helper.ReadWriteFile
 import java.util.*
 
 object AppManager {
 
+    fun getTopApp(): String {
+        val k = ReadWriteFile.returnStringFromProcess(Runtime.getRuntime().exec(
+                arrayOf("su", "-c", "top -n 1 | grep \" ta \" "))
+        ).split("[\n]".toRegex()).forEach {
+            val app = it.split(" ")
+            if (app[app.size - 1] != "su" && app[app.size - 1] != "")
+                return app[app.size - 1]
+        }
+        return ""
+    }
+
+    @Deprecated("This method shall freeze your app. Instead use getTopApp")
     fun getAppInForeground(context: Context): String {
         val arr = getArrayOfUsageStats(context)
-        val mySortedMap = TreeMap<Long, UsageStats>()
+        var greatest: Long = 0
+        var topApp = ""
         for (usageStats in arr) {
-            mySortedMap[usageStats.lastTimeUsed] = usageStats
+            if (usageStats.lastTimeUsed > greatest) {
+                topApp = usageStats.packageName
+                greatest = usageStats.lastTimeUsed
+            }
         }
-        return mySortedMap[mySortedMap.lastKey()]!!.packageName
+        return topApp
     }
 
     private fun getArrayOfUsageStats(context: Context): ArrayList<UsageStats> {

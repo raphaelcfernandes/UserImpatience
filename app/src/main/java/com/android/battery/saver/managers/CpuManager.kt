@@ -6,12 +6,14 @@ import com.android.battery.saver.helper.ReadWriteFile
 import com.android.battery.saver.logger.Logger
 import com.android.battery.saver.model.CpuCoreModel
 import java.io.IOException
+import kotlin.random.Random
 
 object CpuManager {
     private const val pathToCpu: String = "/sys/devices/system/cpu/cpu"
     private val numberOfCores: Int = Runtime.getRuntime().availableProcessors()
     private val cpuCores = HashMap<Int, CpuCoreModel>()
     private var totalOfFrequencies: Int = 0
+    private const val amountOfFrequencyToReduce = 2
 
     init {
         start()
@@ -25,12 +27,28 @@ object CpuManager {
         return cpuCores[core]!!.threshold
     }
 
-    fun setAllCoresToMax() {
+    fun getAllCoresFrequencies(): ArrayList<Int> {
+        val arr = ArrayList<Int>()
         for(i in 0 until numberOfCores) {
-            if(!cpuCores[i]!!.status){
+            arr.add(cpuCores[i]!!.currentFrequency)
+        }
+        return arr
+    }
+
+    fun getAllCoresThreshold(): ArrayList<Int> {
+        val arr = ArrayList<Int>()
+        for(i in 0 until numberOfCores) {
+            arr.add(cpuCores[i]!!.threshold)
+        }
+        return arr
+    }
+
+    fun setAllCoresToMax() {
+        for (i in 0 until numberOfCores) {
+            if (!cpuCores[i]!!.status) {
                 turnCoreOn(i)
             }
-            setCoreFrequency(i, cpuCores[i]!!.frequencies[cpuCores[i]!!.frequencies.size-1])
+            setCoreFrequency(i, cpuCores[i]!!.frequencies[cpuCores[i]!!.frequencies.size - 1])
         }
     }
 
@@ -40,7 +58,7 @@ object CpuManager {
 
     fun start() {
         //stop mpdecision
-//        stopMpDecision()
+        stopMpDecision()
         for (i in 0 until numberOfCores) {
             //Check if core is on/off
             if (!checkIfCoreIsOnFromInternalFile(i)) {
@@ -53,10 +71,108 @@ object CpuManager {
             writeGovernorToCore(i, "userspace")
             //Retrieve current frequency
             val curFreq = getCurrentFrequencyFromInteralFile(i)
-            cpuCores[i] = CpuCoreModel(i, frequencies, curFreq, "userspace", true, 0)
+            cpuCores[i] = CpuCoreModel(i, frequencies, curFreq, "userspace",
+                    SearchAlgorithms.binarySearch(curFreq, frequencies),
+                    true, 0)
             totalOfFrequencies += frequencies.size
         }
-        getSumNumberCore()
+    }
+
+    /**
+     * Check for threshold if any. Do not need to check all cores because they WILL be set at same time
+     */
+    private fun configHasThreshold(): Boolean {
+        return cpuCores[0]!!.threshold != 0
+    }
+
+    /**
+     * Set the threshold to be the speed of each core when the user clicked on the notification
+     */
+    fun setThreshold() {
+        for (i in 0 until numberOfCores) {
+            cpuCores[i]!!.threshold = cpuCores[i]!!.currentFrequency
+        }
+    }
+
+    private fun getAcumulativeSpeedFromCores(): Int {
+        var sum = 0
+        turnCoreOff(2)
+        turnCoreOff(3)
+        setCoreFrequency(1, 300000)
+        for (i in 0 until numberOfCores) {
+            if (cpuCores[i]!!.status)
+                sum += cpuCores[i]!!.freqPos + 1
+        }
+        return sum
+    }
+
+    /**
+     * This ramp up the cpu as the following expression: (maxSystemFreqs - actualSystemFreqs)/2
+     */
+    fun rampCpuUp() {
+        val totalAcumulative = getAcumulativeSpeedFromCores()
+        var totalToIncrease = Math.ceil((totalOfFrequencies - totalAcumulative).toDouble() / 2)
+        var i = 0
+        while (totalToIncrease > 0.0) {
+            if (!cpuCores[i]!!.status)
+                turnCoreOn(i)
+            //Core already at max speed, nothing to do
+            if (cpuCores[i]!!.freqPos == cpuCores[i]!!.frequencies.size - 1) {
+                i++
+                continue
+            }
+            val toMax = cpuCores[i]!!.frequencies.size - 1 - cpuCores[i]!!.freqPos
+            if (totalToIncrease - toMax > 0) {
+                setCoreFrequency(i, cpuCores[i]!!.frequencies[cpuCores[i]!!.freqPos + toMax])
+            } else {
+                setCoreFrequency(i, cpuCores[i]!!.frequencies[cpuCores[i]!!.freqPos + totalToIncrease.toInt()])
+            }
+            totalToIncrease -= toMax
+            i++
+        }
+    }
+
+    /**
+     * Method that scale down the CPU
+     * This will decrease sequentially. It reduces all the frequency of a core before moving to another one
+     */
+    fun scaleCpuDown() {
+        val r = Random.nextInt(0, 11)
+        if (!configHasThreshold() || r < 9) {
+            var reduceFromNext = false
+            var differBetweenCores = 0
+            var i = numberOfCores - 1
+            while (i > 0 && !reduceFromNext) {
+                //Check if cpu is on
+                if (cpuCores[i]!!.status) {
+                    //Needs to check where in the array of frequency the core is set to
+                    val freqPos = cpuCores[i]!!.freqPos
+                    //If the frequency to be reduced reaches the minimum of the core and there still
+                    //value to decrease
+                    if (freqPos - amountOfFrequencyToReduce < 0) {
+                        turnCoreOff(i)
+                        reduceFromNext = true
+                        differBetweenCores = amountOfFrequencyToReduce - freqPos
+                    } else {
+                        setCoreFrequency(i, cpuCores[i]!!.frequencies[freqPos - amountOfFrequencyToReduce])
+                        break
+                    }
+                }
+                i--
+            }
+            if (i == 0 && !reduceFromNext) {
+                val freqPos = cpuCores[i]!!.freqPos
+                if (freqPos - amountOfFrequencyToReduce < 0)
+                    setCoreFrequency(i, cpuCores[i]!!.frequencies[0])
+                else
+                    setCoreFrequency(i, cpuCores[i]!!.frequencies[freqPos - amountOfFrequencyToReduce])
+            }
+            if (reduceFromNext) {
+                //frequencies.size = 0 to N (included). We use -1 to get the last position of the vector
+                setCoreFrequency(i, cpuCores[i]!!.frequencies[cpuCores[i]!!.frequencies.size - (differBetweenCores + 1)])
+            }
+        }
+
     }
 
     /**
@@ -86,28 +202,28 @@ object CpuManager {
      */
     private fun checkIfCoreIsOnFromInternalFile(core: Int): Boolean {
         val status = ReadWriteFile.returnStringFromProcess(
-            Runtime.getRuntime().exec(
-                arrayOf(
-                    "su",
-                    "-c",
-                    "cat /sys/devices/system/cpu/cpu$core/online"
+                Runtime.getRuntime().exec(
+                        arrayOf(
+                                "su",
+                                "-c",
+                                "cat /sys/devices/system/cpu/cpu$core/online"
+                        )
                 )
-            )
         ).replace("\n".toRegex(), "")
         return status.toBoolean()
     }
 
     private fun getCurrentFrequencyFromInteralFile(core: Int): Int {
         val proc = Runtime.getRuntime().exec(
-            arrayOf(
-                "su", "-c",
-                "cat /sys/devices/system/cpu/cpu$core/cpufreq/scaling_cur_freq"
-            )
+                arrayOf(
+                        "su", "-c",
+                        "cat /sys/devices/system/cpu/cpu$core/cpufreq/scaling_cur_freq"
+                )
         )
 
         return ReadWriteFile.returnStringFromProcess(proc)
-            .replace("\n".toRegex(), "")
-            .toInt()
+                .replace("\n".toRegex(), "")
+                .toInt()
     }
 
     /**
@@ -118,13 +234,13 @@ object CpuManager {
      */
     private fun getDefaultGovernor(): String {
         val governors = ReadWriteFile.returnStringFromProcess(
-            Runtime.getRuntime().exec(
-                arrayOf(
-                    "su",
-                    "-c",
-                    "cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors"
+                Runtime.getRuntime().exec(
+                        arrayOf(
+                                "su",
+                                "-c",
+                                "cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors"
+                        )
                 )
-            )
         )
         return if (governors.contains("interactive")) {
             Log.d(Logger.DEBUG, "Default could be interactive")
@@ -205,18 +321,18 @@ object CpuManager {
     private fun getCoreAvailableFrequencies(core: Int): ArrayList<Int> {
         val frequenciesArray = ArrayList<Int>()
         val proc = Runtime.getRuntime().exec(
-            arrayOf(
-                "su", "-c",
-                "cat /sys/devices/system/cpu/cpu$core/cpufreq/scaling_available_frequencies"
-            )
+                arrayOf(
+                        "su", "-c",
+                        "cat /sys/devices/system/cpu/cpu$core/cpufreq/scaling_available_frequencies"
+                )
         )
         ReadWriteFile.returnStringFromProcess(proc)
-            .split("[ \t]".toRegex())
-            .forEach {
-                if (it != "\n") {
-                    frequenciesArray.add(it.toInt())
+                .split("[ \t]".toRegex())
+                .forEach {
+                    if (it != "\n") {
+                        frequenciesArray.add(it.toInt())
+                    }
                 }
-            }
         return frequenciesArray
     }
 
@@ -237,6 +353,7 @@ object CpuManager {
         if (cpuCores[core] != null) {
             cpuCores[core]?.status = false
             cpuCores[core]?.currentFrequency = 0
+            cpuCores[core]?.freqPos = 0
         }
     }
 
@@ -253,6 +370,7 @@ object CpuManager {
             //!IMPORTANT
             //Update the current core frequency
             cpuCores[core]?.currentFrequency = speed
+            cpuCores[core]?.freqPos = SearchAlgorithms.binarySearch(speed, cpuCores[core]!!.frequencies)
         } catch (e: InterruptedException) {
             e.printStackTrace()
         } catch (e: IOException) {
@@ -277,8 +395,8 @@ object CpuManager {
         var i = 0
         while (i < numberOfCores && cpuCores[i]?.status!!) {
             sum += SearchAlgorithms.binarySearch(
-                cpuCores[i]?.currentFrequency!!,
-                cpuCores[i]?.frequencies!!
+                    cpuCores[i]?.currentFrequency!!,
+                    cpuCores[i]?.frequencies!!
             )
             i++
         }
