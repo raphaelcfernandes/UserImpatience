@@ -1,6 +1,7 @@
 package com.android.battery.saver.dao
 
 import android.content.Context
+import android.database.Cursor
 import com.android.battery.saver.database.DBContract
 import com.android.battery.saver.database.UsageInfoDBHelper
 import com.android.battery.saver.managers.CpuManager
@@ -9,12 +10,8 @@ import com.android.battery.saver.model.UsageInfoModel
 class UsageInfoDAOImpl(applicationContext: Context) : UsageInfoDAO {
     private var appDbHelper: UsageInfoDBHelper = UsageInfoDBHelper(applicationContext)
 
-    override fun getAll(): ArrayList<UsageInfoModel> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun update(objectModel: UsageInfoModel) {
-        appDbHelper.updateAppConfiguration(
+    fun update(objectModel: UsageInfoModel) {
+        appDbHelper.update(
                 objectModel.appName,
                 objectModel.brightness,
                 objectModel.coreFrequencies,
@@ -22,7 +19,7 @@ class UsageInfoDAOImpl(applicationContext: Context) : UsageInfoDAO {
     }
 
     override fun insert(objectModel: UsageInfoModel) {
-        appDbHelper.insertAppConfiguration(
+        appDbHelper.insert(
                 objectModel.appName,
                 objectModel.brightness,
                 objectModel.coreFrequencies,
@@ -30,7 +27,7 @@ class UsageInfoDAOImpl(applicationContext: Context) : UsageInfoDAO {
         )
     }
 
-    fun getUsageInfoByAppName(appName: String): UsageInfoModel {
+    override fun getDataFromAppByName(appName: String): UsageInfoModel {
         val res = appDbHelper.getAppData(appName)
         val coreFrequencies = ArrayList<Int>()
         val coreThresholds = ArrayList<Int>()

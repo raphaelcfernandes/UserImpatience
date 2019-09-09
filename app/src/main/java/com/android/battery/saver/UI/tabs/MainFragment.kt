@@ -2,7 +2,7 @@ package com.android.battery.saver.UI.tabs
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,8 +11,6 @@ import androidx.fragment.app.Fragment
 import com.android.battery.saver.NotificationBar
 import com.android.battery.saver.R
 import com.android.battery.saver.database.UsageInfoDBHelper
-import com.android.battery.saver.logger.Logger
-import com.android.battery.saver.managers.AppManager
 import com.android.battery.saver.managers.CpuManager
 import com.android.battery.saver.services.BackgroundService
 

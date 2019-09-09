@@ -2,13 +2,14 @@ package com.android.battery.saver.database
 
 import android.content.ContentValues
 import android.content.Context
+import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import com.android.battery.saver.managers.CpuManager
 import java.util.*
 
 class LogDBHelper(context: Context) :
-    SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+        SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
         const val DATABASE_NAME = "logs.db"
@@ -23,12 +24,20 @@ class LogDBHelper(context: Context) :
 
     }
 
+    fun getLogByApp(appName: String): Cursor {
+        val db = this.readableDatabase
+        return db.rawQuery(
+                "SELECT * FROM " + DBContract.LogInfo.TABLE_NAME + " WHERE "
+                        + DBContract.LogInfo.APP_NAME + " LIKE ?", arrayOf(appName)
+        )
+    }
+
     private fun createTable(): String {
         val createTable = StringBuilder()
         createTable.append(
-            "CREATE TABLE " + DBContract.LogInfo.TABLE_NAME + " (" + DBContract.LogInfo.ID +
-                    " INT PRIMARY KEY, " + DBContract.LogInfo.APP_NAME + " TEXT, "
-                    + DBContract.LogInfo.TIMESTAMP + " INTEGER, "
+                "CREATE TABLE " + DBContract.LogInfo.TABLE_NAME + " (" + DBContract.LogInfo.ID +
+                        " INT PRIMARY KEY, " + DBContract.LogInfo.APP_NAME + " TEXT, "
+                        + DBContract.LogInfo.TIMESTAMP + " INTEGER, "
         )
         for (i in 0 until CpuManager.getNumberOfCores()) {
             createTable.append(DBContract.LogInfo.CPU).append(i).append(" INT, ")
@@ -43,7 +52,7 @@ class LogDBHelper(context: Context) :
      * @param appName: the name of the app that user complained
      * @param cpuSpeed: arrayList that contains the CPUs value when the user complained
      */
-    fun insertLog(appName: String, cpuSpeed: ArrayList<Int>) {
+    fun insert(appName: String, cpuSpeed: ArrayList<Int>) {
         val db = writableDatabase
         val contentValues = ContentValues()
         contentValues.put(DBContract.LogInfo.APP_NAME, appName)

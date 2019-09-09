@@ -8,7 +8,6 @@ import android.content.IntentFilter
 import android.os.IBinder
 import android.util.Log
 import com.android.battery.saver.dao.UsageInfoDAOImpl
-import com.android.battery.saver.helper.ReadWriteFile
 import com.android.battery.saver.logger.Logger
 import com.android.battery.saver.managers.AppManager
 import com.android.battery.saver.managers.CpuManager
@@ -21,8 +20,10 @@ class BackgroundService : Service() {
     //Objects
     private val scheduler = Executors.newSingleThreadScheduledExecutor()
     private lateinit var usageInfoDAO: UsageInfoDAOImpl
+    private lateinit var runnable: Runnable
 
     //Variable
+    private var needsToReload = false
     private var isScreenOn = true
     private val excludedApps = createExcludedAppsSet()
     private var appConfiguration = UsageInfoModel(
@@ -31,8 +32,8 @@ class BackgroundService : Service() {
     )
     private var userComplained = false
     private var clock = 0
-    private val timeInterval = 2
-    private val refreshInterval: Long = 2
+    private val timeToScaleDownCpuInSeconds = 5
+    private val timeToReadTopAppInSeconds: Long = 1
 
     override fun onCreate() {
         super.onCreate()
@@ -52,58 +53,86 @@ class BackgroundService : Service() {
         var currentApp: String
         var lastApp = ""
 
-        val runnable = Runnable {
+        runnable = Runnable {
             //Check if screen is on or off
             if (isScreenOn) {
-                //Get THE PACKAGE NAME of the app that is running in foreground
+                if (userComplained) {
+                    CpuManager.setThreshold()
+                    CpuManager.rampCpuUp()
+                    userComplained = false
+                }
+                //Get THE PACKAGE NAME of the app that is running as top-app
                 currentApp = AppManager.getTopApp()
                 if (!excludedApps.contains(currentApp)) {
                     //The user could be using the same app for many seconds/minutes
-                    if (lastApp != currentApp) {
-                        if ((userComplained || checkIfConfigurationHasChanged(appConfiguration)) && lastApp != "") {
-                            //TODO
-                            //Need service to change birghtness level or keep it as automatic by the system?
-                            val usageInfoModel = UsageInfoModel(currentApp, 100,
-                                    CpuManager.getAllCoresFrequencies(),
-                                    CpuManager.getAllCoresThreshold())
-                            //save appConfiguration config
-                            if (appConfiguration.appName == "") {
-                                usageInfoDAO.insert(usageInfoModel)
-                            }
-                            //Update config
-                            else {
-                                usageInfoDAO.update(usageInfoModel)
-                            }
-                        }
-                        appConfiguration = usageInfoDAO.getUsageInfoByAppName(currentApp)
+                    if (lastApp != currentApp || needsToReload) {
+                        needsToReload = false
+                        if (checkLastAppState(lastApp))
+                            saveLastAppState(lastApp)
+                        appConfiguration = usageInfoDAO.getDataFromAppByName(currentApp)
                         //The app with this package name does not exist in the DB
                         //THIS IS A TOTALLY NEW APP THAT WAS NOT EXECUTED BEFORE
                         if (appConfiguration.appName == "") {
                             //Scale cpu to max
                             CpuManager.setAllCoresToMax()
-//                            Log.d(Logger.DEBUG, "Scaled cpu to max for app %s" + currentApp)
+                        } else {
+                            //Scale cpu to the specific app
+                            CpuManager.scaleCpuToApp(
+                                    appConfiguration.coreFrequencies,
+                                    appConfiguration.coreThresholds
+                            )
                         }
                         lastApp = currentApp
-                        clock = 2
+                        clock = timeToReadTopAppInSeconds.toInt()
                     } else {
                         //TODO
                         //Setar novo threshold quando ja exisita threshold e random deu <9 e usuario n reclamou
                         clock++
-                        if (clock % timeInterval == 0) {
+                        if (clock % timeToScaleDownCpuInSeconds == 0) {
                             CpuManager.scaleCpuDown()
                         }
                     }
                 }
             } else {
-                //Need to save the state of the last running app if it changed
-                //Set isScreenOn to off
-                isScreenOn = false
-                //Set the cpu to min possible
-//                cpuManager.setToMinSpeed()
+                //Set cpu to min just once
+                if (!needsToReload) {
+                    //Need to save the state of the last running app if it changed
+                    if (checkLastAppState(lastApp))
+                        saveLastAppState(lastApp)
+                    //Set isScreenOn to off
+                    isScreenOn = false
+                    //Set the cpu to min possible
+                    CpuManager.setToMinSpeed()
+                    needsToReload = true
+                    lastApp = ""
+                }
             }
         }
-        scheduler.scheduleAtFixedRate(runnable, 1, refreshInterval, SECONDS)
+        scheduler.scheduleAtFixedRate(runnable, 1, timeToReadTopAppInSeconds, SECONDS)
         return START_NOT_STICKY
+    }
+
+    private fun checkLastAppState(lastApp: String): Boolean {
+        if (checkIfConfigurationHasChanged(appConfiguration) && lastApp != "") {
+            return true
+        }
+        return false
+    }
+
+    private fun saveLastAppState(lastApp: String) {
+        //TODO
+        //Need service to change birghtness level or keep it as automatic by the system?
+        val usageInfoModel = UsageInfoModel(lastApp, 100,
+                CpuManager.getAllCoresFrequencies(),
+                CpuManager.getAllCoresThreshold())
+        //save appConfiguration config
+        if (appConfiguration.appName == "") {
+            usageInfoDAO.insert(usageInfoModel)
+        }
+        //Update last config
+        else {
+            usageInfoDAO.update(usageInfoModel)
+        }
     }
 
     private fun createExcludedAppsSet(): HashSet<String> {
@@ -121,11 +150,8 @@ class BackgroundService : Service() {
         if (app.appName == "") {
             return true
         }
-        //TODO
-        //Checks if brightness changed
-        //Checks if CPU changed
         for (i in 0 until CpuManager.getNumberOfCores()) {
-            if (CpuManager.getFrequencyFromCore(i) != app.coreFrequencies[0])
+            if (CpuManager.getFrequencyFromCore(i) != app.coreFrequencies[i])
                 return true
         }
         return false
@@ -144,8 +170,7 @@ class BackgroundService : Service() {
             if (intent.action == "com.android.battery.saver.USER_COMPLAINED") {
                 Log.d(Logger.DEBUG, "USER COMPLAINED")
                 userComplained = true
-                CpuManager.setThreshold()
-                CpuManager.rampCpuUp()
+
             }
         }
     }

@@ -19,6 +19,19 @@ object CpuManager {
         start()
     }
 
+    fun scaleCpuToApp(cpuFrequencies: ArrayList<Int>, cpuThreshold: ArrayList<Int>) {
+        for (i in 0 until numberOfCores) {
+            if (cpuFrequencies[i] == 0) {
+                turnCoreOff(i)
+            } else {
+                if(!cpuCores[i]!!.status)
+                    turnCoreOn(i)
+                setCoreFrequency(i, cpuFrequencies[i])
+            }
+            cpuCores[i]!!.threshold = cpuThreshold[i]
+        }
+    }
+
     fun getFrequencyFromCore(core: Int): Int {
         return cpuCores[core]!!.currentFrequency
     }
@@ -29,7 +42,7 @@ object CpuManager {
 
     fun getAllCoresFrequencies(): ArrayList<Int> {
         val arr = ArrayList<Int>()
-        for(i in 0 until numberOfCores) {
+        for (i in 0 until numberOfCores) {
             arr.add(cpuCores[i]!!.currentFrequency)
         }
         return arr
@@ -37,7 +50,7 @@ object CpuManager {
 
     fun getAllCoresThreshold(): ArrayList<Int> {
         val arr = ArrayList<Int>()
-        for(i in 0 until numberOfCores) {
+        for (i in 0 until numberOfCores) {
             arr.add(cpuCores[i]!!.threshold)
         }
         return arr
@@ -96,9 +109,6 @@ object CpuManager {
 
     private fun getAcumulativeSpeedFromCores(): Int {
         var sum = 0
-        turnCoreOff(2)
-        turnCoreOff(3)
-        setCoreFrequency(1, 300000)
         for (i in 0 until numberOfCores) {
             if (cpuCores[i]!!.status)
                 sum += cpuCores[i]!!.freqPos + 1
@@ -137,6 +147,7 @@ object CpuManager {
      * This will decrease sequentially. It reduces all the frequency of a core before moving to another one
      */
     fun scaleCpuDown() {
+        //Todo: check if cpu can decrease before reaching threshold
         val r = Random.nextInt(0, 11)
         if (!configHasThreshold() || r < 9) {
             var reduceFromNext = false
@@ -415,7 +426,8 @@ object CpuManager {
 
     fun setToMinSpeed() {
         for (i in 0 until numberOfCores) {
-            if (i == 0) {
+            if(i < numberOfCores/2) {
+                turnCoreOn(i)
                 setCoreFrequency(i, cpuCores[i]!!.frequencies[0])
             } else {
                 turnCoreOff(i)

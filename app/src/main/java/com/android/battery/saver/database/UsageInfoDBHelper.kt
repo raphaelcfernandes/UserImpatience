@@ -27,7 +27,7 @@ class UsageInfoDBHelper(context: Context) :
         val DATABASE_VERSION = 1
     }
 
-    fun insertAppConfiguration(
+    fun insert(
             appName: String, brightnessLevel: Int,
             coreFrequencies: ArrayList<Int>,
             coreThresholds: ArrayList<Int>
@@ -62,7 +62,7 @@ class UsageInfoDBHelper(context: Context) :
     /**
      * Updates a specific app with new values
      */
-    fun updateAppConfiguration(
+    fun update(
             appName: String,
             brightnessLevel: Int,
             coreFrequencies: ArrayList<Int>,
@@ -81,16 +81,16 @@ class UsageInfoDBHelper(context: Context) :
         db.update(
                 DBContract.UsageInfo.TABLE_NAME,
                 contentValues,
-                "appName = ? ",
+                DBContract.UsageInfo.APP_NAME + " = ? ",
                 arrayOf(appName)
         )
     }
 
-    fun getAppData(AppName: String): Cursor {
+    fun getAppData(appName: String): Cursor {
         val db = this.readableDatabase
         return db.rawQuery(
                 "SELECT * FROM " + DBContract.UsageInfo.TABLE_NAME + " WHERE "
-                        + DBContract.UsageInfo.APP_NAME + " LIKE ?", arrayOf(AppName)
+                        + DBContract.UsageInfo.APP_NAME + " LIKE ?", arrayOf(appName)
         )
     }
 
