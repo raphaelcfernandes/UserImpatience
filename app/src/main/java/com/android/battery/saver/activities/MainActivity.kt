@@ -18,6 +18,7 @@ class MainActivity : AppCompatActivity() {
         val adapter = PageHolderAdapter(applicationContext, supportFragmentManager)
         pager.adapter = adapter
         tab_layout.setupWithViewPager(pager)
+
 //        var granted = false
 //        val appOps = this
 //            .getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager

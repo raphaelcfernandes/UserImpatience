@@ -8,12 +8,22 @@ import android.content.IntentFilter
 import android.os.IBinder
 import android.util.Log
 import com.android.battery.saver.dao.UsageInfoDAOImpl
+import com.android.battery.saver.event.OnDeactivateServiceEvent
+import com.android.battery.saver.helper.Preferences
 import com.android.battery.saver.logger.Logger
 import com.android.battery.saver.managers.AppManager
 import com.android.battery.saver.managers.CpuManager
 import com.android.battery.saver.model.UsageInfoModel
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit.SECONDS
+import androidx.core.content.ContextCompat.getSystemService
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+import android.R.attr.name
+
+
 
 
 class BackgroundService : Service() {
@@ -52,62 +62,64 @@ class BackgroundService : Service() {
         super.onStartCommand(intent, flags, startId)
         var currentApp: String
         var lastApp = ""
-
+        CpuManager.setGovernorFromSpinner(Preferences.getGovernor(applicationContext)!!)
         runnable = Runnable {
             //Check if screen is on or off
-            if (isScreenOn) {
-                if (userComplained) {
-                    CpuManager.setThreshold()
-                    CpuManager.rampCpuUp()
-                    userComplained = false
-                }
-                //Get THE PACKAGE NAME of the app that is running as top-app
-                currentApp = AppManager.getTopApp()
-                if (!excludedApps.contains(currentApp)) {
-                    //The user could be using the same app for many seconds/minutes
-                    if (lastApp != currentApp || needsToReload) {
-                        needsToReload = false
-                        if (checkLastAppState(lastApp))
-                            saveLastAppState(lastApp)
-                        appConfiguration = usageInfoDAO.getDataFromAppByName(currentApp)
-                        //The app with this package name does not exist in the DB
-                        //THIS IS A TOTALLY NEW APP THAT WAS NOT EXECUTED BEFORE
-                        if (appConfiguration.appName == "") {
-                            //Scale cpu to max
-                            CpuManager.setAllCoresToMax()
-                        } else {
-                            //Scale cpu to the specific app
-                            CpuManager.scaleCpuToApp(
-                                    appConfiguration.coreFrequencies,
-                                    appConfiguration.coreThresholds
-                            )
-                        }
-                        lastApp = currentApp
-                        clock = timeToReadTopAppInSeconds.toInt()
-                    } else {
-                        //TODO
-                        //Setar novo threshold quando ja exisita threshold e random deu <9 e usuario n reclamou
-                        clock++
-                        if (clock % timeToScaleDownCpuInSeconds == 0) {
-                            CpuManager.scaleCpuDown()
-                        }
-                    }
-                }
-            } else {
-                //Set cpu to min just once
-                if (!needsToReload) {
-                    //Need to save the state of the last running app if it changed
-                    if (checkLastAppState(lastApp))
-                        saveLastAppState(lastApp)
-                    //Set isScreenOn to off
-                    isScreenOn = false
-                    //Set the cpu to min possible
-                    CpuManager.setToMinSpeed()
-                    needsToReload = true
-                    lastApp = ""
-                }
-            }
+            println("running")
+//            if (isScreenOn) {
+//                if (userComplained) {
+//                    CpuManager.setThreshold()
+//                    CpuManager.rampCpuUp()
+//                    userComplained = false
+//                }
+//                //Get THE PACKAGE NAME of the app that is running as top-app
+//                currentApp = AppManager.getTopApp()
+//                if (!excludedApps.contains(currentApp)) {
+//                    //The user could be using the same app for many seconds/minutes
+//                    if (lastApp != currentApp || needsToReload) {
+//                        needsToReload = false
+//                        if (checkLastAppState(lastApp))
+//                            saveLastAppState(lastApp)
+//                        appConfiguration = usageInfoDAO.getDataFromAppByName(currentApp)
+//                        //The app with this package name does not exist in the DB
+//                        //THIS IS A TOTALLY NEW APP THAT WAS NOT EXECUTED BEFORE
+//                        if (appConfiguration.appName == "") {
+//                            //Scale cpu to max
+//                            CpuManager.setAllCoresToMax()
+//                        } else {
+//                            //Scale cpu to the specific app
+//                            CpuManager.scaleCpuToApp(
+//                                    appConfiguration.coreFrequencies,
+//                                    appConfiguration.coreThresholds
+//                            )
+//                        }
+//                        lastApp = currentApp
+//                        clock = timeToReadTopAppInSeconds.toInt()
+//                    } else {
+//                        //TODO
+//                        //Setar novo threshold quando ja exisita threshold e random deu <9 e usuario n reclamou
+//                        clock++
+//                        if (clock % timeToScaleDownCpuInSeconds == 0) {
+//                            CpuManager.scaleCpuDown()
+//                        }
+//                    }
+//                }
+//            } else {
+//                //Set cpu to min just once
+//                if (!needsToReload) {
+//                    //Need to save the state of the last running app if it changed
+//                    if (checkLastAppState(lastApp))
+//                        saveLastAppState(lastApp)
+//                    //Set isScreenOn to off
+//                    isScreenOn = false
+//                    //Set the cpu to min possible
+//                    CpuManager.setToMinSpeed()
+//                    needsToReload = true
+//                    lastApp = ""
+//                }
+//            }
         }
+
         scheduler.scheduleAtFixedRate(runnable, 1, timeToReadTopAppInSeconds, SECONDS)
         return START_NOT_STICKY
     }
@@ -173,5 +185,11 @@ class BackgroundService : Service() {
 
             }
         }
+    }
+
+    override fun onDestroy() {
+        unregisterReceiver(broadcastRcv)
+        scheduler.shutdown()
+        super.onDestroy()
     }
 }

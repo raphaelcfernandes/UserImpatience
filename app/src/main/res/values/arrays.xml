@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="governors">
+        <item>Choose one</item>
+        <item>conservative</item>
+        <item>interactive</item>
+        <item>ondemand</item>
+        <item>powersave</item>
+        <item>performance</item>
+        <item>UImpatience</item>
+    </string-array>
+</resources>

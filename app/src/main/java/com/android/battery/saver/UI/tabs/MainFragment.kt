@@ -2,7 +2,6 @@ package com.android.battery.saver.UI.tabs
 
 import android.content.Intent
 import android.os.Bundle
-import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,15 +9,13 @@ import android.widget.Button
 import androidx.fragment.app.Fragment
 import com.android.battery.saver.NotificationBar
 import com.android.battery.saver.R
-import com.android.battery.saver.database.UsageInfoDBHelper
-import com.android.battery.saver.managers.CpuManager
+import com.android.battery.saver.helper.Preferences
 import com.android.battery.saver.services.BackgroundService
-
+import com.google.android.material.snackbar.Snackbar
 
 class MainFragment : Fragment() {
-    private var cpu = CpuManager
-    private lateinit var db: UsageInfoDBHelper
-    private lateinit var n: NotificationBar
+    private val n: NotificationBar = NotificationBar()
+
     override fun onCreateView(
             inflater: LayoutInflater,
             container: ViewGroup?,
@@ -26,19 +23,33 @@ class MainFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_main, container, false)
         val activate = view.findViewById(R.id.activate) as Button
-//        activate.setOnClickListener {
-//            activity?.startService(Intent(activity, BackgroundService::class.java))
-//        }
         val deactivate = view.findViewById(R.id.deactivate) as Button
-        deactivate.setOnClickListener {
-            CpuManager.stop()
+
+        if (Preferences.getBackgroundServiceStatus(context!!)?.toBoolean() == true) {
+            activate.isEnabled = false
+            deactivate.isEnabled = true
         }
-        n = NotificationBar()
-        n.createSpeedUpNotification(context!!)
+
+        activate.setOnClickListener {
+            if (Preferences.getGovernor(context!!) == null) {
+                Snackbar.make(view, R.string.noGovernorSelected, Snackbar.LENGTH_LONG).show()
+            } else {
+                activity?.startService(Intent(activity, BackgroundService::class.java))
+                n.createSpeedUpNotification(context!!)
+                activate.isEnabled = false
+                deactivate.isEnabled = true
+            }
+        }
+
+        deactivate.setOnClickListener {
+            activity?.stopService(Intent(activity, BackgroundService::class.java))
+            activate.isEnabled = true
+            deactivate.isEnabled = false
+            n.removeNotification(context!!)
+
+        }
 //        val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
 //        startActivity(intent)
-        activity?.startService(Intent(activity, BackgroundService::class.java))
         return view
-
     }
 }

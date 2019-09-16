@@ -19,6 +19,23 @@ object CpuManager {
         start()
     }
 
+    /**
+     * Set the governor to what the user selected
+     */
+    fun setGovernorFromSpinner(governor: String) {
+        if(governor != "UImpatience") {
+            startMpDecision()
+            for(i in 0 until numberOfCores) {
+                if(!cpuCores[i]!!.status)
+                    turnCoreOn(i)
+                writeGovernorToCore(i,governor)
+            }
+        } else {
+            stopMpDecision()
+            start()
+        }
+    }
+
     fun scaleCpuToApp(cpuFrequencies: ArrayList<Int>, cpuThreshold: ArrayList<Int>) {
         for (i in 0 until numberOfCores) {
             if (cpuFrequencies[i] == 0) {
@@ -70,8 +87,6 @@ object CpuManager {
     }
 
     fun start() {
-        //stop mpdecision
-        stopMpDecision()
         for (i in 0 until numberOfCores) {
             //Check if core is on/off
             if (!checkIfCoreIsOnFromInternalFile(i)) {
