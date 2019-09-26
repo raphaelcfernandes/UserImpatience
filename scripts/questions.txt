@@ -1,0 +1,11 @@
+Execution sequence? to start test
+
+Still don't know how to identify cpu response time after click
+Does background service supposed to read along with cpu the speed core is running and save it to database?
+
+
+Todo
+
+Create gmail/youtube/chrome script
+create test flow
+fix in app the amount to increase (right now it's fixed)

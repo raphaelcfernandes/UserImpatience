@@ -63,14 +63,19 @@ class BackgroundService : Service() {
         var currentApp: String
         var lastApp = ""
         CpuManager.setGovernorFromSpinner(Preferences.getGovernor(applicationContext)!!)
+        println("Decrease cpu interval: " + Preferences.getDecreaseCPUInterval(applicationContext!!))
+        println("Read TA interval: " + Preferences.getReadTAInterval(applicationContext!!))
+        println("Margin to increase CPU: " + Preferences.getMarginToIncreaseCpu(applicationContext!!))
+        println("Decrease cpu freq: " + Preferences.getDecreaseCPUFrequency(applicationContext!!))
         runnable = Runnable {
             //Check if screen is on or off
-            println("running")
+//            println("running")
 //            if (isScreenOn) {
 //                if (userComplained) {
 //                    CpuManager.setThreshold()
 //                    CpuManager.rampCpuUp()
 //                    userComplained = false
+//                    clock = 0
 //                }
 //                //Get THE PACKAGE NAME of the app that is running as top-app
 //                currentApp = AppManager.getTopApp()
@@ -98,7 +103,7 @@ class BackgroundService : Service() {
 //                    } else {
 //                        //TODO
 //                        //Setar novo threshold quando ja exisita threshold e random deu <9 e usuario n reclamou
-//                        clock++
+//                        clock+=1
 //                        if (clock % timeToScaleDownCpuInSeconds == 0) {
 //                            CpuManager.scaleCpuDown()
 //                        }

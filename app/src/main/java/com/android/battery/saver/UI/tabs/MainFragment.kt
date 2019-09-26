@@ -15,7 +15,6 @@ import com.google.android.material.snackbar.Snackbar
 
 class MainFragment : Fragment() {
     private val n: NotificationBar = NotificationBar()
-
     override fun onCreateView(
             inflater: LayoutInflater,
             container: ViewGroup?,
@@ -34,10 +33,11 @@ class MainFragment : Fragment() {
             if (Preferences.getGovernor(context!!) == null) {
                 Snackbar.make(view, R.string.noGovernorSelected, Snackbar.LENGTH_LONG).show()
             } else {
-                activity?.startService(Intent(activity, BackgroundService::class.java))
                 n.createSpeedUpNotification(context!!)
                 activate.isEnabled = false
                 deactivate.isEnabled = true
+                Preferences.setBackgroundServiceStatus(context!!, true)
+                activity?.startService(Intent(activity, BackgroundService::class.java))
             }
         }
 
@@ -46,8 +46,9 @@ class MainFragment : Fragment() {
             activate.isEnabled = true
             deactivate.isEnabled = false
             n.removeNotification(context!!)
-
+            Preferences.clearPreferences(context!!)
         }
+
 //        val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
 //        startActivity(intent)
         return view

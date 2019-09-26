@@ -9,11 +9,14 @@ object Preferences {
     private val KEY_PREFS_GOVERNOR = "governor"
     private val KEY_PREFS_READ_TA_INTERVAL = "TAinterval"
     private val KEY_PREFS_DECREASE_CPU_TIMEINTERVAL = "decreaseCPUinterval"
+    private val KEY_PREFS_DECREASE_CPU_FREQUENCYAMOUNT = "decreaseCPUfrequency"
+    private val KEY_PREFS_INCRASE_CPU_MARGIN = "increaseCpuMargin"
 
-    fun setReadTAInterval(context: Context, interval: Int) {
+
+    fun setReadTAInterval(context: Context, interval: String) {
         val sharedPref: SharedPreferences.Editor =
                 context.getSharedPreferences(SHARED_PREFS_FILE_NAME, Context.MODE_PRIVATE).edit()
-        sharedPref.putInt(KEY_PREFS_READ_TA_INTERVAL, interval)
+        sharedPref.putString(KEY_PREFS_READ_TA_INTERVAL, interval)
         sharedPref.apply()
     }
 
@@ -24,10 +27,29 @@ object Preferences {
         sharedPref.apply()
     }
 
+    fun setDecreaseCPUFrequency(context: Context, value: Int) {
+        val sharedPref: SharedPreferences.Editor =
+                context.getSharedPreferences(SHARED_PREFS_FILE_NAME, Context.MODE_PRIVATE).edit()
+        sharedPref.putInt(KEY_PREFS_DECREASE_CPU_FREQUENCYAMOUNT, value)
+        sharedPref.apply()
+    }
+
+    fun getDecreaseCPUFrequency(context: Context): Int {
+        return context.getSharedPreferences(SHARED_PREFS_FILE_NAME, Context.MODE_PRIVATE).getInt(
+                KEY_PREFS_DECREASE_CPU_FREQUENCYAMOUNT, -1)
+    }
+
     fun setGovernor(context: Context, governor: String) {
         val sharedPref: SharedPreferences.Editor =
                 context.getSharedPreferences(SHARED_PREFS_FILE_NAME, Context.MODE_PRIVATE).edit()
         sharedPref.putString(KEY_PREFS_GOVERNOR, governor)
+        sharedPref.apply()
+    }
+
+    fun setMarginToIncreaseCpu(context: Context, margin: String) {
+        val sharedPref: SharedPreferences.Editor =
+                context.getSharedPreferences(SHARED_PREFS_FILE_NAME, Context.MODE_PRIVATE).edit()
+        sharedPref.putString(KEY_PREFS_INCRASE_CPU_MARGIN, margin)
         sharedPref.apply()
     }
 
@@ -43,9 +65,14 @@ object Preferences {
                 KEY_PREFS_BACKGROUND_RUNNING, null)
     }
 
-    fun getReadTAInterval(context: Context): Int? {
-        return context.getSharedPreferences(SHARED_PREFS_FILE_NAME, Context.MODE_PRIVATE).getInt(
-                KEY_PREFS_READ_TA_INTERVAL, -1)
+    fun getMarginToIncreaseCpu(context: Context): String? {
+        return context.getSharedPreferences(SHARED_PREFS_FILE_NAME, Context.MODE_PRIVATE).getString(
+                KEY_PREFS_INCRASE_CPU_MARGIN, null)
+    }
+
+    fun getReadTAInterval(context: Context): String? {
+        return context.getSharedPreferences(SHARED_PREFS_FILE_NAME, Context.MODE_PRIVATE).getString(
+                KEY_PREFS_READ_TA_INTERVAL, null)
     }
 
     fun getGovernor(context: Context): String? {
@@ -59,6 +86,6 @@ object Preferences {
     }
 
     fun clearPreferences(context: Context) {
-        context.getSharedPreferences(SHARED_PREFS_FILE_NAME,Context.MODE_PRIVATE).edit().clear().apply()
+        context.getSharedPreferences(SHARED_PREFS_FILE_NAME, Context.MODE_PRIVATE).edit().clear().apply()
     }
 }
