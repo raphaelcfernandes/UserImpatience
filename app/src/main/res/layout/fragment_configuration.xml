@@ -20,7 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <com.google.android.material.textfield.TextInputEditText
-                android:hint="Time to read TA in s"
+                android:hint="Time to read TA in ms"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="numberDecimal">
@@ -33,7 +33,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <com.google.android.material.textfield.TextInputEditText
-                android:hint="Time window to reduce CPU freq in s"
+                android:hint="Time window to reduce CPU freq in ms"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="number">
@@ -60,7 +60,7 @@
                 android:hint="Amount of frequency to reduce after A has passed"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="text">
+                android:inputType="number">
             </com.google.android.material.textfield.TextInputEditText>
         </com.google.android.material.textfield.TextInputLayout>
         <Button

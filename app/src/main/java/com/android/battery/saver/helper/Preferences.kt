@@ -4,13 +4,13 @@ import android.content.Context
 import android.content.SharedPreferences
 
 object Preferences {
-    private val SHARED_PREFS_FILE_NAME = "UImpatience"
-    private val KEY_PREFS_BACKGROUND_RUNNING = "background_service"
-    private val KEY_PREFS_GOVERNOR = "governor"
-    private val KEY_PREFS_READ_TA_INTERVAL = "TAinterval"
-    private val KEY_PREFS_DECREASE_CPU_TIMEINTERVAL = "decreaseCPUinterval"
-    private val KEY_PREFS_DECREASE_CPU_FREQUENCYAMOUNT = "decreaseCPUfrequency"
-    private val KEY_PREFS_INCRASE_CPU_MARGIN = "increaseCpuMargin"
+    private const val SHARED_PREFS_FILE_NAME = "UImpatience"
+    private const val KEY_PREFS_BACKGROUND_RUNNING = "background_service"
+    private const val KEY_PREFS_GOVERNOR = "governor"
+    private const val KEY_PREFS_READ_TA_INTERVAL = "TAinterval"
+    private const val KEY_PREFS_DECREASE_CPU_TIMEINTERVAL = "decreaseCPUinterval"
+    private const val KEY_PREFS_DECREASE_CPU_FREQUENCYAMOUNT = "decreaseCPUfrequency"
+    private const val KEY_PREFS_INCRASE_CPU_MARGIN = "increaseCpuMargin"
 
 
     fun setReadTAInterval(context: Context, interval: String) {

@@ -6,6 +6,7 @@ import com.android.battery.saver.helper.ReadWriteFile
 import com.android.battery.saver.logger.Logger
 import com.android.battery.saver.model.CpuCoreModel
 import java.io.IOException
+import kotlin.math.ceil
 import kotlin.random.Random
 
 object CpuManager {
@@ -13,7 +14,6 @@ object CpuManager {
     private val numberOfCores: Int = Runtime.getRuntime().availableProcessors()
     private val cpuCores = HashMap<Int, CpuCoreModel>()
     private var totalOfFrequencies: Int = 0
-    private const val amountOfFrequencyToReduce = 2
 
     init {
         start()
@@ -134,9 +134,9 @@ object CpuManager {
     /**
      * This ramp up the cpu as the following expression: (maxSystemFreqs - actualSystemFreqs)/2
      */
-    fun rampCpuUp() {
+    fun rampCpuUp(increase: Double) {
         val totalAcumulative = getAcumulativeSpeedFromCores()
-        var totalToIncrease = Math.ceil((totalOfFrequencies - totalAcumulative).toDouble() / 2)
+        var totalToIncrease = ceil((totalOfFrequencies - totalAcumulative).toDouble() * increase)
         var i = 0
         while (totalToIncrease > 0.0) {
             if (!cpuCores[i]!!.status)
@@ -161,7 +161,7 @@ object CpuManager {
      * Method that scale down the CPU
      * This will decrease sequentially. It reduces all the frequency of a core before moving to another one
      */
-    fun scaleCpuDown() {
+    fun scaleCpuDown(amountOfFrequencyToReduce: Int) {
         //Todo: check if cpu can decrease before reaching threshold
         val r = Random.nextInt(0, 11)
         if (!configHasThreshold() || r < 9) {

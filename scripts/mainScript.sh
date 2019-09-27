@@ -35,11 +35,11 @@ APPS=(youtube)
 governors=(conservative powersave interactive performance ondemand userspace)
 
 #Read interval that userspace background thread will read TA from top in ms
-timeToReadTA=(0.2 0.5 1)
+timeToReadTA=(250 500 1000)
 
-#Time to decrease cpu frequency in seconds
+#Time to decrease cpu frequency in ms
 #this is the parameter A
-decreaseCPUInterval=(1 2 4 8)
+decreaseCPUInterval=(1000 2000 4000 8000)
 
 #Amount of frequency to reduce after A.time has passed
 decreaseCpuFrequency=(1 2 4 8)

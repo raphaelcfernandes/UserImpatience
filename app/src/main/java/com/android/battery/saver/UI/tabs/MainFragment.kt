@@ -33,19 +33,23 @@ class MainFragment : Fragment() {
             if (Preferences.getGovernor(context!!) == null) {
                 Snackbar.make(view, R.string.noGovernorSelected, Snackbar.LENGTH_LONG).show()
             } else {
-                n.createSpeedUpNotification(context!!)
                 activate.isEnabled = false
                 deactivate.isEnabled = true
                 Preferences.setBackgroundServiceStatus(context!!, true)
-                activity?.startService(Intent(activity, BackgroundService::class.java))
+                if (Preferences.getGovernor(context!!) == "UImpatience") {
+                    activity?.startService(Intent(activity, BackgroundService::class.java))
+                    n.createSpeedUpNotification(context!!)
+                }
             }
         }
 
         deactivate.setOnClickListener {
-            activity?.stopService(Intent(activity, BackgroundService::class.java))
+            if (Preferences.getGovernor(context!!) == "UImpatience") {
+                activity?.stopService(Intent(activity, BackgroundService::class.java))
+                n.removeNotification(context!!)
+            }
             activate.isEnabled = true
             deactivate.isEnabled = false
-            n.removeNotification(context!!)
             Preferences.clearPreferences(context!!)
         }
 
