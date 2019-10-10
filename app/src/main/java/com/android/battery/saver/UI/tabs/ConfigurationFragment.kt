@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import com.android.battery.saver.R
 import com.android.battery.saver.activities.SpinnerActivity
 import com.android.battery.saver.helper.Preferences
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_configuration.view.*
 
 class ConfigurationFragment : Fragment() {
@@ -34,6 +35,8 @@ class ConfigurationFragment : Fragment() {
                 Preferences.setDecreaseCPUFrequency(context!!,
                         reduceFrequencyAmount.editText?.text.toString().toInt())
             }
+
+            Snackbar.make(view, "$governor selected", Snackbar.LENGTH_SHORT).show()
         }
         return view
     }

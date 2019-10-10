@@ -48,7 +48,6 @@ class BackgroundService : Service() {
         filter.addAction(Intent.ACTION_SCREEN_OFF)
         registerReceiver(broadcastRcv, filter)
         governor = Preferences.getGovernor(applicationContext)!!
-        CpuManager.setGovernorFromSpinner(governor)
         if (governor == "UImpatience") {
             readTAinterval = Preferences.getReadTAInterval(applicationContext!!)!!.toLong()
             decreaseCPUInterval = Preferences.getDecreaseCPUInterval(applicationContext!!)!!

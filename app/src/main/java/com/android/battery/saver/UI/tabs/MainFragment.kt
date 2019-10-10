@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import com.android.battery.saver.NotificationBar
 import com.android.battery.saver.R
 import com.android.battery.saver.helper.Preferences
+import com.android.battery.saver.managers.CpuManager
 import com.android.battery.saver.services.BackgroundService
 import com.google.android.material.snackbar.Snackbar
 
@@ -35,8 +36,11 @@ class MainFragment : Fragment() {
             } else {
                 activate.isEnabled = false
                 deactivate.isEnabled = true
-                Preferences.setBackgroundServiceStatus(context!!, true)
+                val governor = Preferences.getGovernor(context!!)
+                CpuManager.setGovernorFromSpinner(governor!!)
+
                 if (Preferences.getGovernor(context!!) == "UImpatience") {
+                    Preferences.setBackgroundServiceStatus(context!!, true)
                     activity?.startService(Intent(activity, BackgroundService::class.java))
                     n.createSpeedUpNotification(context!!)
                 }

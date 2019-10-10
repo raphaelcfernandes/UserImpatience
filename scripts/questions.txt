@@ -1,11 +1,24 @@
-Execution sequence? to start test
-
-Still don't know how to identify cpu response time after click
-Does background service supposed to read along with cpu the speed core is running and save it to database?
-
-
 Todo
 
-Create gmail/youtube/chrome script
 create test flow
-fix in app the amount to increase (right now it's fixed)
+fix uimpatience db
+
+test youtube with diferente niveis de cpu:
+only cpu0 at max:
+    Response time for commands are bit slow, but no lagging to watch video even watching in 1060p
+only cpu0 at mid freq value:
+    Response time um pouco lento
+    Demora aprox 12 segundos para carregar os primeiros resultados da request.
+    Dentro do app demora entre 3-4 segundos pra carregar resultado de busca
+    3 segundos +- pra abrir o video. Enquanto vidoe toca, demorou 14s pra carregar restante da pagina (nos videos seguintes demoraram menos)
+    Celular automaticamente setou a qualidade do video pra 240p, após alguns segundos, foi para 1080
+    N percebi travamento do video e nem queda de qualidade. Acredito que demora um pouco pra bufferizar e dps o processamento é praticamente minimo
+    Leve travamento do video quando media response time com script a cada 100ms 
+        Automaticamente setou para o minimo possivel de qualdiade. Voltou para 1080 apos 30 segundos +-
+
+gasto do cat:
+
+10ms: 25% em media
+100ms: 18% em media
+1000ms: 3% em media
+2000ms: 2% em media
