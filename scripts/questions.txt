@@ -16,9 +16,14 @@ only cpu0 at mid freq value:
     Leve travamento do video quando media response time com script a cada 100ms 
         Automaticamente setou para o minimo possivel de qualdiade. Voltou para 1080 apos 30 segundos +-
 
-gasto do cat:
+./rdumtool --device-type=UM24C --bluetooth-device=00:BA:55:57:B5:58 --watch 1 --json >> gmail_ondemand.txt
+
+gasto do cat (interactive):
 
 10ms: 25% em media
 100ms: 18% em media
 1000ms: 3% em media
 2000ms: 2% em media
+
+gasto do cat (powersave):
+100ms: 18% em media

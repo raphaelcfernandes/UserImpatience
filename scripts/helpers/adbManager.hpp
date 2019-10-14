@@ -6,6 +6,7 @@
 #include <thread>
 
 class AdbManager {
+ public:
   // Mid button responsable to minimize all apps coordinate
   std::string midButtonAndroid = "734 2540";
   // Main menu coordinate on Nexus 6
@@ -15,7 +16,6 @@ class AdbManager {
   // Coordinate after search for app
   std::string appLocationCoordinate = "236 478";
 
- public:
   AdbManager();
   virtual ~AdbManager();
   void touchScreenPosition(std::string position);
@@ -24,5 +24,6 @@ class AdbManager {
   void turnScreenOnAndUnlock();
   void setGovernorInUserImpatienceApp(std::string governor);
   void sleep(int timeInMs);
+  void inputKeyEvent(int code);
 };
 #endif

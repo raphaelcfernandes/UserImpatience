@@ -3,19 +3,10 @@
 Gmail::Gmail() {}
 Gmail::~Gmail() {}
 
-void Gmail::gmailScript(std::string governor) {
+void Gmail::gmailScript() {
   AdbManager adb;
-  std::cout << "Executing GMAIL script." << std::endl;
   ResponseTime::calculateResponseTime();
-  // Generic::getCurrentTimestamp();
-  // Generic::GetStdoutFromCommand("adb shell dumpsys battery | grep 'level' |
-  // tr -dc '0-9'");
-  // std::ofstream outfile("testResults/gmail_" + governor + ".csv");
-  // outfile.close();
-  // # echo "start battery level: $batteryLevel" > gmail_$1.txt
-  // # echo "action,response_time_ms,start,end" >> gmail_$1.txt
-  // # echo "startApp,$response,$start,$end" >> gmail_$1.txt
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < 1; i++) {
     // opens sideBar menu
     adb.touchScreenPosition("158 212");
     ResponseTime::calculateResponseTime();
@@ -47,7 +38,9 @@ void Gmail::gmailScript(std::string governor) {
     // Email text
     adb.touchScreenPosition("292 986");
     ResponseTime::calculateResponseTime();
-    adb.typeWithKeyboard("Creating a simple e-mail to test UImpatience project. If you are receiving this email feel blessed about it, you are the chosen on!");
+    adb.typeWithKeyboard(
+        "Creating a simple e-mail to test UImpatience project. If you are "
+        "receiving this email feel blessed about it, you are the chosen on!");
     ResponseTime::calculateResponseTime();
     // Close keyboard
     adb.touchScreenPosition("310 2482");
@@ -55,17 +48,17 @@ void Gmail::gmailScript(std::string governor) {
     // send email
     adb.touchScreenPosition("1213 187");
     ResponseTime::calculateResponseTime();
-    //delete last message sent
+    // delete last message sent
     adb.swipeScreen("705 514", "705 514", 2500);
     ResponseTime::calculateResponseTime();
     adb.touchScreenPosition("1060 199");
-    std::cout<< "GMAIL script has finished its work"<<std::endl;
-    
+    // opens sideBar menu
+    adb.touchScreenPosition("158 212");
+    ResponseTime::calculateResponseTime();
+    // Clicks on All Mail
+    adb.touchScreenPosition("452 411");
+    ResponseTime::calculateResponseTime();
   }
+  adb.touchScreenPosition("1159 2481");
+  adb.swipeScreen("1014 2132", "84 2132", 100);
 }
-
-// start=$(date +%s%N | cut -b1-13)
-// ./responseTimeScript.sh
-// # response=$?
-// # end=$(date +%s%N | cut -b1-13)
-// # echo "Executing GMAIL script"

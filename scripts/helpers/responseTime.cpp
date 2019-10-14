@@ -6,7 +6,7 @@ ResponseTime::~ResponseTime() {}
 int ResponseTime::calculateResponseTime() {
   int PREV_TOTAL = 0, PREV_IDLE = 0, TOTAL = 100, DIFF_USAGE = 100, cont = 0,
       pos = 0;
-  int IDLE = 0, DIFF_IDLE = 0, DIFF_TOTAL = 0;
+  int IDLE = 0, DIFF_IDLE = 0, DIFF_TOTAL = 0, media = 0;
   std::string text = "";
   // while (true) {
   while (DIFF_USAGE >= 0 || cont <= 2) {
@@ -41,11 +41,17 @@ int ResponseTime::calculateResponseTime() {
     DIFF_IDLE = IDLE - PREV_IDLE;
     DIFF_TOTAL = TOTAL - PREV_TOTAL;
     DIFF_USAGE = 100 - ((100 * DIFF_IDLE) / DIFF_TOTAL) - 18;
-    std::cout << "Cpu usage - (cat cost): " << DIFF_USAGE  +18<< std::endl;
+    // DIFF_USAGE = 100 - ((100 * DIFF_IDLE) / DIFF_TOTAL);
+    // std::cout << "Cpu usage - (cat cost): " << DIFF_USAGE << std::endl;
     PREV_TOTAL = TOTAL;
     PREV_IDLE = IDLE;
+    media += DIFF_USAGE;
+    // if (cont == 1200) break;
+    // std::cout << cont << std::endl;
+    // std::cout << "Gasto: " << DIFF_USAGE + 18 << std::endl;
     cont += 1;
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
+  // std::cout << media / (cont - 2) << std::endl;
   return cont - 2;
 }

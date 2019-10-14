@@ -13,6 +13,6 @@ class Gmail {
  public:
   Gmail();
   virtual ~Gmail();
-  void gmailScript(std::string governor);
+  void gmailScript();
 };
 #endif

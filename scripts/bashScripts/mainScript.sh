@@ -128,7 +128,7 @@ else
         typeWithKeyboard $var
         touchScreenPosition $appLocationCoordinate
         if [ "$var" = "gmail" ]; then
-          ./gmailScript.sh $gov 
+          ./gmailScript.sh $gov
         elif [ "$var" = "youtube" ]; then
           ./youtubeScript.sh
         elif [ "$var" = "chrome" ]; then

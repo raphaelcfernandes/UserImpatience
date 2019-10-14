@@ -30,7 +30,7 @@ void AdbManager::typeWithKeyboard(std::string text) {
       cmd += c;
     }
     popen(cmd.c_str(), "r");
-    sleep(250);
+    sleep(400);
   }
 }
 
@@ -75,4 +75,10 @@ void AdbManager::setGovernorInUserImpatienceApp(std::string governor) {
   touchScreenPosition("124 362");
   // Activate
   touchScreenPosition("479 602");
+}
+
+void AdbManager::inputKeyEvent(int code) {
+  std::string cmd = "adb shell input keyevent " + std::to_string(code);
+  popen(cmd.c_str(), "r");
+  sleep(1000);
 }
