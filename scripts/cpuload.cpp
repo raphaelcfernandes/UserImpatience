@@ -1,15 +1,15 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "helpers/responseTime.hpp"
-#include "helpers/adbManager.hpp"
 #include "appScripts/gmail.hpp"
+#include "helpers/adbManager.hpp"
+#include "helpers/responseTime.hpp"
 
 using namespace std;
 
 int main() {
-  Gmail g;
-  g.gmailScript("ondemand");
+  // Gmail g;
+  // g.gmailScript("ondemand");
   // ResponseTime::calculateResponseTime();
 
   vector<string> apps = {"gmail", "youtube", "spotify", "chrome"};
