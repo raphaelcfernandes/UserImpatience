@@ -128,7 +128,7 @@ def parse_args(argv=None):
 
 class RDUMTool:
     def print_json(self, response):
-
+        # Get what we read from volts, amps and append timestamp
         return str(getattr(response, 'volts')) + ',' + str(getattr(response, 'amps')) + "," + datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S.%f') + "\n"
         # out = {'amps': getattr(response, 'amps'), 'timestamp': time.time()}
         # out = {x: getattr(response, x) for x in response.labels}
@@ -285,6 +285,7 @@ class RDUMTool:
         # Create file that will be written
         f = open(self.filename, "a+")
         # ...Instantiate a thread and pass the cmd and the app that C++ will run
+        # This is done to be able to execute my CPP script while reading from UM24C and writing to file without blocking any of the processes
         mythread = MyThread("run", self.app)
         mythread.setName("C++ execution")
         # ...Start the thread, invoke the run method
@@ -293,15 +294,12 @@ class RDUMTool:
             try:
                 self.dev.send(b'\xf0')
                 if self.args.json:
+                    # Write to file what we read from UM24C
                     f.write(self.print_json(rdum.Response(
                         self.dev.recv(),
                         collection_time=datetime.datetime.now(),
                         device_type=self.args.device_type,
                     )))
-                    # self.print_json(rdum.Response(
-                    #     self.dev.recv(),
-                    #     collection_time=datetime.datetime.now(),
-                    #     device_type=self.args.device_type,))
                 else:
                     self.print_human(rdum.Response(
                         self.dev.recv(),
@@ -331,12 +329,12 @@ class RDUMTool:
         self.setup_logging()
 
         self.filename = ""
-        self.governor = ["interactive"]
-        self.apps = ["gmail"]
+        self.governor = ["interactive, powersave, performance, ondemand, userspace"]
+        self.apps = ["gmail, youtube, chrome"]
         self.setGovernor = True
         self.runApp = True
         self.app = ""
-        self.filename = "../results/interactive/gmail/gmail_interactive_5v.txt"
+        self.filename = ""
 
         # logging.info('rdumtool {}'.format(__version__))
         # logging.info('Copyright (C) 2019 Ryan Finnie')
@@ -366,11 +364,10 @@ class RDUMTool:
                         print("Python running {} with {}".format(app, gov))
                         self.app = app
                         for i in range(0, 30):
-                            print("running {}",i)
+                            print("running {}", i)
                             # Save file to its respective governor and app
-                            
-                            # self.filename = "../results/{}/{}/{}_{}_{}.txt".format(
-                            #     gov, app, app, gov, i)
+                            self.filename = "../results/{}/{}/{}_{}_{}.txt".format(
+                                gov, app, app, gov, i)
                             self.loop()
                     self.setGovernor = True
 
