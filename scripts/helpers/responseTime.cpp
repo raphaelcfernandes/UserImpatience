@@ -40,7 +40,8 @@ int ResponseTime::calculateResponseTime() {
 
     DIFF_IDLE = IDLE - PREV_IDLE;
     DIFF_TOTAL = TOTAL - PREV_TOTAL;
-    DIFF_USAGE = 100 - ((100 * DIFF_IDLE) / DIFF_TOTAL) - 18;
+    DIFF_USAGE = 100 - ((100 * DIFF_IDLE) / DIFF_TOTAL) - 25;
+    // std::cout << DIFF_USAGE << std::endl;
     // DIFF_USAGE = 100 - ((100 * DIFF_IDLE) / DIFF_TOTAL);
     // std::cout << "Cpu usage - (cat cost): " << DIFF_USAGE << std::endl;
     PREV_TOTAL = TOTAL;
@@ -50,7 +51,7 @@ int ResponseTime::calculateResponseTime() {
     // std::cout << cont << std::endl;
     // std::cout << "Gasto: " << DIFF_USAGE + 18 << std::endl;
     cont += 1;
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
   // std::cout << media / (cont - 2) << std::endl;
   return cont - 2;

@@ -3,15 +3,21 @@
 AdbManager::AdbManager(){};
 AdbManager::~AdbManager(){};
 
-void AdbManager::touchScreenPosition(std::string position) {
+void AdbManager::tap(std::string position) {
   std::string cmd = "adb shell input tap " + position;
   popen(cmd.c_str(), "r");
   sleep(1000);
 }
 
-void AdbManager::swipeScreen(std::string from, std::string to, int time) {
-  std::string cmd =
-      "adb shell input swipe " + from + " " + to + " " + std::to_string(time);
+void AdbManager::swipe(std::string from, std::string to, int time) {
+  std::string cmd = "";
+  if (time != 0) {
+    cmd =
+        "adb shell input swipe " + from + " " + to + " " + std::to_string(time);
+  } else {
+    cmd = "adb shell input swipe " + from + " " + to;
+  }
+  std::cout << cmd << std::endl;
   popen(cmd.c_str(), "r");
   sleep(1000);
 }
@@ -30,7 +36,7 @@ void AdbManager::typeWithKeyboard(std::string text) {
       cmd += c;
     }
     popen(cmd.c_str(), "r");
-    sleep(400);
+    sleep(500);
   }
 }
 
@@ -46,38 +52,38 @@ void AdbManager::setGovernorInUserImpatienceApp(std::string governor) {
   std::string cmd = "adb shell input keyevent 3";
   popen(cmd.c_str(), "r");
   sleep(1000);
-  touchScreenPosition(mainMenuCoordinate);
-  touchScreenPosition(quickSearchAppCoordinate);
+  tap(mainMenuCoordinate);
+  tap(quickSearchAppCoordinate);
   typeWithKeyboard("battery");
-  touchScreenPosition(appLocationCoordinate);
+  tap(appLocationCoordinate);
   // Deactivate button
-  touchScreenPosition("1045 570");
+  tap("1045 570");
   // Config tab
-  touchScreenPosition("1222 345");
+  tap("1222 345");
   // Dropdown menu
-  touchScreenPosition("423 528");
+  tap("423 528");
   if (governor.compare("conservative") == 0) {
-    touchScreenPosition("271 755");
+    tap("271 755");
   } else if (governor.compare("powersave") == 0) {
-    touchScreenPosition("186 1249");
+    tap("186 1249");
   } else if (governor.compare("interactive") == 0) {
-    touchScreenPosition("134 913");
+    tap("134 913");
   } else if (governor.compare("performance") == 0) {
-    touchScreenPosition("147 1417");
+    tap("147 1417");
   } else if (governor.compare("ondemand") == 0) {
-    touchScreenPosition("203 1090");
+    tap("203 1090");
   } else {  // userspace
-    touchScreenPosition("185 1605");
+    tap("185 1605");
   }
   // Save button
-  touchScreenPosition("140 652");
+  tap("140 652");
   // Main menu
-  touchScreenPosition("124 362");
+  tap("124 362");
   // Activate
-  touchScreenPosition("479 602");
+  tap("479 602");
 }
 
-void AdbManager::inputKeyEvent(int code) {
+void AdbManager::keyevent(int code) {
   std::string cmd = "adb shell input keyevent " + std::to_string(code);
   popen(cmd.c_str(), "r");
   sleep(1000);

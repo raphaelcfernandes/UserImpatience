@@ -24,7 +24,7 @@ import time
 import datetime
 import logging
 import threading
-
+import datetime
 from . import __version__
 import rdum
 
@@ -128,7 +128,8 @@ def parse_args(argv=None):
 
 class RDUMTool:
     def print_json(self, response):
-        return str(getattr(response, 'amps')) + "," + str(time.time()) + "\n"
+
+        return str(getattr(response, 'volts')) + ',' + str(getattr(response, 'amps')) + "," + datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S.%f') + "\n"
         # out = {'amps': getattr(response, 'amps'), 'timestamp': time.time()}
         # out = {x: getattr(response, x) for x in response.labels}
         # out['data_groups'] = [{'amp_hours': x.amp_hours, 'watt_hours': x.watt_hours} for x in out['data_groups']]
@@ -282,7 +283,7 @@ class RDUMTool:
     def loop(self):
         # Depois de ter conectado com device
         # Create file that will be written
-        f = open(self.filename, "w+")
+        f = open(self.filename, "a+")
         # ...Instantiate a thread and pass the cmd and the app that C++ will run
         mythread = MyThread("run", self.app)
         mythread.setName("C++ execution")
@@ -297,7 +298,10 @@ class RDUMTool:
                         collection_time=datetime.datetime.now(),
                         device_type=self.args.device_type,
                     )))
-
+                    # self.print_json(rdum.Response(
+                    #     self.dev.recv(),
+                    #     collection_time=datetime.datetime.now(),
+                    #     device_type=self.args.device_type,))
                 else:
                     self.print_human(rdum.Response(
                         self.dev.recv(),
@@ -320,19 +324,19 @@ class RDUMTool:
                 f.close()
                 return
             # else:
-                # return
+            #     return
 
     def main(self):
         self.args = parse_args()
         self.setup_logging()
 
         self.filename = ""
-        self.governor = ["performance", "conservative",
-                         "powersave", "ondemand",  "userspace"]
-        self.apps = ["gmail", "youtube", "spotify", "chrome"]
+        self.governor = ["interactive"]
+        self.apps = ["gmail"]
         self.setGovernor = True
         self.runApp = True
         self.app = ""
+        self.filename = "../results/interactive/gmail/gmail_interactive_5v.txt"
 
         # logging.info('rdumtool {}'.format(__version__))
         # logging.info('Copyright (C) 2019 Ryan Finnie')
@@ -341,10 +345,11 @@ class RDUMTool:
         self.setup_device()
         try:
             # self.send_commands()
-
+            # self.loop()
             for gov in self.governor:
                 # Create a folder for each governor
-                os.mkdir("../results/{}".format(gov))
+                if not os.path.exists("../results/{}".format(gov)):
+                    os.mkdir("../results/{}".format(gov))
                 print("Python setting governor")
                 # Tell the c++ code to set the governor before executing the array of apps
                 if self.setGovernor:
@@ -356,13 +361,16 @@ class RDUMTool:
                 if self.runApp:
                     for app in self.apps:
                         # Create folder for each app inside each governor
-                        os.mkdir("../results/{}/{}".format(gov, app))
+                        if not os.path.exists("../results/{}/{}".format(gov, app)):
+                            os.mkdir("../results/{}/{}".format(gov, app))
                         print("Python running {} with {}".format(app, gov))
                         self.app = app
-                        for i in range(0, 1):
+                        for i in range(0, 30):
+                            print("running {}",i)
                             # Save file to its respective governor and app
-                            self.filename = "../results/{}/{}/{}_{}_{}.txt".format(
-                                gov, app, app, gov, i)
+                            
+                            # self.filename = "../results/{}/{}/{}_{}_{}.txt".format(
+                            #     gov, app, app, gov, i)
                             self.loop()
                     self.setGovernor = True
 

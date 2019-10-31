@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <thread>
+#include "responseTime.hpp"
 
 class AdbManager {
  public:
@@ -18,12 +19,12 @@ class AdbManager {
 
   AdbManager();
   virtual ~AdbManager();
-  void touchScreenPosition(std::string position);
-  void swipeScreen(std::string from, std::string to, int time);
+  void tap(std::string position);
+  void swipe(std::string from, std::string to, int time);
   void typeWithKeyboard(std::string text);
   void turnScreenOnAndUnlock();
   void setGovernorInUserImpatienceApp(std::string governor);
   void sleep(int timeInMs);
-  void inputKeyEvent(int code);
+  void keyevent(int code);
 };
 #endif

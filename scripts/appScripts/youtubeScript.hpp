@@ -1,5 +1,5 @@
-#ifndef GMAIL_H
-#define GMAIL_H
+#ifndef YOUTUBE_H
+#define YOUTUBE_H
 
 #include "../helpers/generic.hpp"
 #include "../helpers/adbManager.hpp"
@@ -7,10 +7,10 @@
   
 #include <fstream>
 
-class Gmail {
+class Youtube {
  public:
-  Gmail();
-  virtual ~Gmail();
-  void gmailScript();
+  Youtube();
+  virtual ~Youtube();
+  void youtubeScript();
 };
 #endif

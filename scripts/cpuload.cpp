@@ -1,36 +1,48 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "appScripts/chromeScript.hpp"
 #include "appScripts/gmail.hpp"
 #include "helpers/adbManager.hpp"
-#include "helpers/responseTime.hpp"
 
 using namespace std;
 
 int main(int argc, char *argv[]) {
-  AdbManager adb;
-  if (argc < 3) {
-    cout << "Number incorrect of parameters" << endl;
-    return -1;
+  int i=0;
+  while(true) {
+    i+=1;
+    std::cout<<i<<std::endl;
   }
-  string cmd = argv[1];
-  if (cmd == "set") {
-    cout << "C++/ADB setting " << argv[2] << endl;
-    adb.setGovernorInUserImpatienceApp(argv[2]);
-  } else if (cmd == "run") {
-    string app = argv[2];
-    std::cout << "C++/ADB going to run " << app << endl;
-    if (app == "gmail") {
-      Gmail g;
-      adb.inputKeyEvent(3);
-      adb.touchScreenPosition(adb.mainMenuCoordinate);
-      adb.touchScreenPosition(adb.quickSearchAppCoordinate);
-      adb.typeWithKeyboard("gmail");
-      adb.touchScreenPosition(adb.appLocationCoordinate);
-      g.gmailScript();
-    }
-  }
+  // AdbManager adb;
+  // if (argc < 3) {
+  //   cout << "Number incorrect of parameters" << endl;
+  //   return -1;
+  // }
+  // string cmd = argv[1];
+  // if (cmd == "set") {
+  //   cout << "C++/ADB setting " << argv[2] << endl;
+  //   adb.setGovernorInUserImpatienceApp(argv[2]);
+  // } else if (cmd == "run") {
+  //   string app = argv[2];
+  //   std::cout << "C++/ADB going to run " << app << endl;
 
+  //   if (app == "gmail") {
+  //     for (int i = 0; i < 3; i++) {
+  //       Gmail g;
+  //       adb.keyevent(3);
+  //       adb.tap(adb.mainMenuCoordinate);
+  //       adb.tap(adb.quickSearchAppCoordinate);
+  //       adb.typeWithKeyboard("gmail");
+  //       adb.tap(adb.appLocationCoordinate);
+  //       g.gmailScript();
+  //     }
+  //   }
+  //   if (app == "chrome") {
+  //     Chrome chrome;
+  //     adb.tap(adb.appLocationCoordinate);
+  //     chrome.chromeScript();
+  //   }
+  // }
   // vector<string> apps = {"gmail", "youtube", "spotify", "chrome"};
   // vector<string> governors = {"conservative", "powersave", "interactive",
   // "performance",  "ondemand",  "userspace"};
