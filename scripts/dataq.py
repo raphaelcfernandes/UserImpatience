@@ -77,7 +77,7 @@ class DataQ:
         # DataQ will send bursts of 16bytes, or 8 packages of 2 bytes
         self.send_cmd("ps {}".format(ps))
         self.config_scn_lst()
-        self.send_cmd("filter 0 0")
+        self.send_cmd("filter 0 1")
         self.send_cmd("deca 1")
         self.send_cmd("dec 1")
         self.send_cmd(f"srate {self.srate}")
@@ -175,7 +175,7 @@ class Tester:
                             os.mkdir("results/{}/{}".format(gov, app))
                         print("Python running {} with {}".format(app, gov))
                         self.app = app
-                        for i in range(2, 3):
+                        for i in range(1, 2):
                             print("running {}", i)
                             # Save file to its respective governor and app
                             self.filename = "results/{}/{}/{}_{}_{}.txt".format(
@@ -183,15 +183,16 @@ class Tester:
                             self.executeTest()
                         self.setGovernor = True
                         self.runApp = False
-        except:
-            print("except")
+        except Exception as e:
+            print(e)
 
     def executeTest(self):
         f = open(self.filename, "w+")
         f.write('amperes,timestamp\n')
         acum = 0
         cont = 0
-        dividend = 1
+        decimation_factor = 1000
+        import pdb
         if os.system("./cpu search {}".format(self.app)) == 0:
             # This is done to be able to execute my CPP script while reading from UM24C and writing to file without blocking any of the processes
             mythread = MyThread("run", self.app)
@@ -202,36 +203,27 @@ class Tester:
             self.dataq.send_cmd("start")
             while True:
                 if(self.dataq.ser.inWaiting() >= self.dataq.packet_size):
+                    # Time received the packages
                     curr_time = datetime.now()
-                    measurement_period_us = (
-                        1/self.dataq.measurement_rate)*1000000
-                    measurement_time = curr_time - \
-                        timedelta(microseconds=measurement_period_us *
-                                    (self.dataq.measurements_per_packet-1))
+                    # measuremente_time = curr_time.strftime("%H:%M:%S.%f")
                     for _ in range(self.dataq.measurements_per_packet):
                         # Always two bytes per sample...read them
                         bytes = self.dataq.ser.read(2)
-                        # Only analog channels for a DI-1100, with dig_in states appearing in the two LSBs of ONLY the first slist position
                         result = int.from_bytes(
                             bytes, byteorder='little', signed=True)
                         result = result >> 2
                         result = result << 2
-                        result = (result * 10)/32768/0.05
+                        result = 10*(result/32768)
                         acum += result
-                        if(cont == dividend):
-                            output_string = f"{acum/dividend}"
-                        # output_string = f"{result}"
-                            f.write(output_string.rstrip(", ") + "," +
-                                    measurement_time.strftime("%H:%M:%S.%f")+"\n")
-                            output_string = ""
-                            measurement_time = measurement_time + \
-                                timedelta(microseconds=measurement_period_us)
+                        cont += 1
+                        if(cont == decimation_factor):
+                            f.write("{: .3f},{}\n".format(
+                                acum/decimation_factor, datetime.now().strftime("%H:%M:%S.%f")))
                             cont = 0
                             acum = 0
-                        cont += 1
-                if not mythread.is_alive():
-                    f.close()
-                    break
+                    if not mythread.is_alive():
+                        f.close()
+                        break
             self.dataq.acquiring = False
             self.dataq.send_cmd("stop")
 
