@@ -19,12 +19,12 @@ class AdbManager {
 
   AdbManager();
   virtual ~AdbManager();
-  void tap(std::string position);
-  void swipe(std::string from, std::string to, int time);
-  void typeWithKeyboard(std::string text);
+  void tap(std::string position, bool saveToFile);
+  void swipe(std::string from, std::string to, int time, bool saveToFile);
+  void typeWithKeyboard(std::string text, bool saveToFile);
   void turnScreenOnAndUnlock();
   void setGovernorInUserImpatienceApp(std::string governor);
   void sleep(int timeInMs);
-  void keyevent(int code);
+  void keyevent(int code, bool saveToFile);
 };
 #endif

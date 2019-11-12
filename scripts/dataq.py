@@ -238,11 +238,14 @@ class MyThread(threading.Thread):
     def run(self):
         # ./cpu run app governor iteration
         os.system('./cpu {} {} {} {} '.format(self.cmd,
-                                           self.app, self.governor, self.iteration))
+                                              self.app, self.governor, self.iteration))
 
 
 if __name__ == '__main__':
     # dataq = DataQ()
     tester = Tester()
     tester.test()
+
+    # print(datetime.fromtimestamp(timestamp))
+    # print(datetime.timestamp(datetime.now()))
     sys.exit(0)

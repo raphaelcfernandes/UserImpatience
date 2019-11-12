@@ -1,7 +1,10 @@
+#include <chrono>
+#include <ctime>
 #include <iostream>
+#include <ratio>
 #include <string>
 // #include "appScripts/chromeScript.hpp"
-// #include "appScripts/gmail.hpp"
+#include "appScripts/gmail.hpp"
 // #include "helpers/adbManager.hpp"
 #include "helpers/generic.hpp"
 using namespace std;
@@ -10,8 +13,13 @@ int main(int argc, char* argv[]) {
   string governor = argv[3];
   string app = argv[2];
   string iteration = argv[4];
-  Generic* g = Generic::getInstance();
-  // AdbManager adb;
+  Generic::getInstance()->createFile(governor, app, iteration);
+
+  // auto duration = std::chrono::system_clock::now().time_since_epoch();
+  // auto millis =
+  //     std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+  //     cout<<millis<<endl;
+  AdbManager adb;
   // if (argc < 3) {
   //   cout << "Number incorrect of parameters" << endl;
   //   return -1;
@@ -24,17 +32,18 @@ int main(int argc, char* argv[]) {
   // } else {
   //   string app = argv[2];
   //   if (cmd == "search") {
-  //     adb.keyevent(3);
-  //     adb.tap(adb.mainMenuCoordinate);
-  //     adb.tap(adb.quickSearchAppCoordinate);
-  //     adb.typeWithKeyboard(app);
+  adb.keyevent(3, false);
+  adb.tap(adb.mainMenuCoordinate, false);
+  adb.tap(adb.quickSearchAppCoordinate, false);
+  adb.typeWithKeyboard(app, false);
   //   }
   //   if (cmd == "run") {
   //     std::cout << "C++/ADB going to run " << app << endl;
-  //     adb.tap(adb.appLocationCoordinate);
+  adb.tap(adb.appLocationCoordinate, false);
   //     if (app == "gmail") {
-  //       Gmail g;
-  //       g.gmailScript();
+  Gmail g;
+  g.gmailScript();
+  Generic::getInstance()->file.close();
   //     }
   //     if (app == "chrome") {
   //       Chrome chrome;
