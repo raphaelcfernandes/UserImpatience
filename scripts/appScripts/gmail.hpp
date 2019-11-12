@@ -1,10 +1,9 @@
 #ifndef GMAIL_H
 #define GMAIL_H
 
-#include "../helpers/generic.hpp"
 #include "../helpers/adbManager.hpp"
 #include "../helpers/responseTime.hpp"
-  
+#include "../helpers/generic.hpp"
 #include <fstream>
 
 class Gmail {

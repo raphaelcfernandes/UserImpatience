@@ -13,8 +13,7 @@ int ResponseTime::calculateResponseTime() {
     /**
      * cpu user nice system idle iowait irq softirq 0 0 0
      */
-    std::string CPU =
-        Generic::GetStdoutFromCommand("adb shell $(echo sed -n 1p /proc/stat)");
+    std::string CPU = Generic::getInstance()->GetStdoutFromCommand("adb shell $(echo sed -n 1p /proc/stat)");
     text = "";
     TOTAL = 0;
     IDLE = 0;

@@ -1,44 +1,47 @@
 #include <iostream>
 #include <string>
-#include <vector>
-#include "appScripts/chromeScript.hpp"
-#include "appScripts/gmail.hpp"
-#include "helpers/adbManager.hpp"
-
+// #include "appScripts/chromeScript.hpp"
+// #include "appScripts/gmail.hpp"
+// #include "helpers/adbManager.hpp"
+#include "helpers/generic.hpp"
 using namespace std;
 
-int main(int argc, char *argv[]) {
-  AdbManager adb;
-  if (argc < 3) {
-    cout << "Number incorrect of parameters" << endl;
-    return -1;
-  }
-  string cmd = argv[1];
-  if (cmd == "set") {
-    cout << "Here" << endl;
-    cout << "C++/ADB setting " << argv[2] << endl;
-    adb.setGovernorInUserImpatienceApp(argv[2]);
-  } else {
-    string app = argv[2];
-    if (cmd == "search") {
-      adb.keyevent(3);
-      adb.tap(adb.mainMenuCoordinate);
-      adb.tap(adb.quickSearchAppCoordinate);
-      adb.typeWithKeyboard(app);
-    }
-    if (cmd == "run") {
-      std::cout << "C++/ADB going to run " << app << endl;
-      adb.tap(adb.appLocationCoordinate);
-      if (app == "gmail") {
-        Gmail g;
-        g.gmailScript();
-      }
-      if (app == "chrome") {
-        Chrome chrome;
-        chrome.chromeScript();
-      }
-    }
-  }
+int main(int argc, char* argv[]) {
+  string governor = argv[3];
+  string app = argv[2];
+  string iteration = argv[4];
+  Generic* g = Generic::getInstance();
+  // AdbManager adb;
+  // if (argc < 3) {
+  //   cout << "Number incorrect of parameters" << endl;
+  //   return -1;
+  // }
+  // string cmd = argv[1];
+  // if (cmd == "set") {
+  //   cout << "Here" << endl;
+  //   cout << "C++/ADB setting " << argv[2] << endl;
+  //   adb.setGovernorInUserImpatienceApp(argv[2]);
+  // } else {
+  //   string app = argv[2];
+  //   if (cmd == "search") {
+  //     adb.keyevent(3);
+  //     adb.tap(adb.mainMenuCoordinate);
+  //     adb.tap(adb.quickSearchAppCoordinate);
+  //     adb.typeWithKeyboard(app);
+  //   }
+  //   if (cmd == "run") {
+  //     std::cout << "C++/ADB going to run " << app << endl;
+  //     adb.tap(adb.appLocationCoordinate);
+  //     if (app == "gmail") {
+  //       Gmail g;
+  //       g.gmailScript();
+  //     }
+  //     if (app == "chrome") {
+  //       Chrome chrome;
+  //       chrome.chromeScript();
+  //     }
+  //   }
+  // }
   // vector<string> apps = {"gmail", "youtube", "spotify", "chrome"};
   // vector<string> governors = {"conservative", "powersave", "interactive",
   // "performance",  "ondemand",  "userspace"};

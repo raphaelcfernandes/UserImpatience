@@ -71,19 +71,17 @@ class DataQ:
         self.measurements_per_packet = int(self.packet_size/2)
         # Stop in case DI-1100 is already scanning
         self.send_cmd("stop")
+        self.ser.flushInput()
         # Define binary output mode
         self.send_cmd("encode 0")
         # Set ps 0 means wait 16bytes to be ready from dataQ to read it
         # DataQ will send bursts of 16bytes, or 8 packages of 2 bytes
         self.send_cmd("ps {}".format(ps))
         self.config_scn_lst()
-        self.send_cmd("filter 0 1")
+        self.send_cmd("filter 0 0")
         self.send_cmd("deca 1")
         self.send_cmd("dec 1")
         self.send_cmd(f"srate {self.srate}")
-        self.ser.flushInput()
-
-    # Sends a passed command string after appending <cr>
 
     def send_cmd(self, command):
         self.ser.write((command+'\r').encode())
@@ -146,17 +144,15 @@ class DataQ:
 class Tester:
     governor = ["interactive"]
     apps = ["gmail"]
-    dataq = DataQ()
+    # dataq = DataQ()
 
     def __init__(self):
         self.setGovernor = True
         self.runApp = True
-        self.app = ""
         self.filename = ""
 
     def test(self):
         try:
-
             # Create a folder for each governor
             for gov in self.governor:
                 if not os.path.exists("results/{}".format(gov)):
@@ -173,69 +169,76 @@ class Tester:
                         # Create folder for each app inside each governor
                         if not os.path.exists("results/{}/{}".format(gov, app)):
                             os.mkdir("results/{}/{}".format(gov, app))
+                        if not os.path.exists("adbTouchEvents/{}/{}".format(gov, app)):
+                            os.mkdir("adbTouchEvents/{}/{}".format(gov, app))
                         print("Python running {} with {}".format(app, gov))
-                        self.app = app
-                        for i in range(1, 2):
+                        for i in range(0, 1):
                             print("running {}", i)
                             # Save file to its respective governor and app
-                            self.filename = "results/{}/{}/{}_{}_{}.txt".format(
-                                gov, app, app, gov, i)
-                            self.executeTest()
+                            self.filename = "results/{}/{}/{}.txt".format(
+                                gov, app, i)
+                            self.executeTest(app, gov, i)
                         self.setGovernor = True
                         self.runApp = False
         except Exception as e:
             print(e)
 
-    def executeTest(self):
+    def executeTest(self, app, gov, iteration):
         f = open(self.filename, "w+")
         f.write('amperes,timestamp\n')
         acum = 0
         cont = 0
-        decimation_factor = 1000
+        decimation_factor = 10
         import pdb
-        if os.system("./cpu search {}".format(self.app)) == 0:
-            # This is done to be able to execute my CPP script while reading from UM24C and writing to file without blocking any of the processes
-            mythread = MyThread("run", self.app)
-            mythread.setName("C++ execution")
-            # ...Start the thread, invoke the run method
-            mythread.start()
-            self.dataq.acquiring = True
-            self.dataq.send_cmd("start")
-            while True:
-                if(self.dataq.ser.inWaiting() >= self.dataq.packet_size):
-                    # Time received the packages
-                    curr_time = datetime.now()
-                    # measuremente_time = curr_time.strftime("%H:%M:%S.%f")
-                    for _ in range(self.dataq.measurements_per_packet):
-                        # Always two bytes per sample...read them
-                        bytes = self.dataq.ser.read(2)
-                        result = int.from_bytes(
-                            bytes, byteorder='little', signed=True)
-                        result = result >> 2
-                        result = result << 2
-                        result = 10*(result/32768)
-                        acum += result
-                        cont += 1
-                        if(cont == decimation_factor):
-                            f.write("{: .3f},{}\n".format(
-                                acum/decimation_factor, datetime.now().strftime("%H:%M:%S.%f")))
-                            cont = 0
-                            acum = 0
-                    if not mythread.is_alive():
-                        f.close()
-                        break
-            self.dataq.acquiring = False
-            self.dataq.send_cmd("stop")
+        # if os.system("./cpu search {}".format(self.app)) == 0:
+        # This is done to be able to execute my CPP script while reading from UM24C and writing to file without blocking any of the processes
+        mythread = MyThread("run", app, gov, iteration)
+        mythread.setName("C++ execution")
+        # ...Start the thread, invoke the run method
+        mythread.start()
+        while not mythread.is_alive():
+            continue
+        # self.dataq.acquiring = True
+        # self.dataq.send_cmd("start")
+        # while True:
+        #     if(self.dataq.ser.inWaiting() >= self.dataq.packet_size):
+        #         # Time received the packages
+        #         # curr_time = datetime.now()
+        #         # measuremente_time = curr_time.strftime("%H:%M:%S.%f")
+        #         for _ in range(self.dataq.measurements_per_packet):
+        #             # Always two bytes per sample...read them
+        #             bytes = self.dataq.ser.read(2)
+        #             result = int.from_bytes(
+        #                 bytes, byteorder='little', signed=True)
+        #             result = result >> 2
+        #             result = result << 2
+        #             result = (10*(result/32768))/0.05
+        #             acum += result
+        #             cont += 1
+        #             if(cont == decimation_factor):
+        #                 f.write("{:.3f},{}\n".format(
+        #                     acum/decimation_factor, datetime.now().strftime("%H:%M:%S.%f")))
+        #                 cont = 0
+        #                 acum = 0
+        #         # if not mythread.is_alive():
+        #         #     f.close()
+        #         #     break
+        # self.dataq.acquiring = False
+        # self.dataq.send_cmd("stop")
 
 
 class MyThread(threading.Thread):
-    def __init__(self, cmd, app):
+    def __init__(self, cmd, app, gov, iteration):
         self.cmd = cmd
         self.app = app
+        self.governor = gov
+        self.iteration = iteration
         threading.Thread.__init__(self)
 
     def run(self):
-        os.system('./cpu {} {}'.format(self.cmd, self.app))
+        # ./cpu run app governor iteration
+        os.system('./cpu {} {} {} {} '.format(self.cmd,
+                                           self.app, self.governor, self.iteration))
 
 
 if __name__ == '__main__':

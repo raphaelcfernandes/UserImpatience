@@ -2,14 +2,22 @@
 #define GENERIC_H
 
 #include <chrono>
-#include <string>
+#include <fstream>
 #include <iostream>
+#include <string>
 
 class Generic {
+ private:
+  Generic(){};
+  static Generic* instance;
+  virtual ~Generic(){};
  public:
-  Generic();
-  virtual ~Generic();
-  static std::string GetStdoutFromCommand(std::string cmd);
-  static std::time_t getCurrentTimestamp();
+  std::ofstream file;
+  static Generic* getInstance();
+  std::time_t getCurrentTimestamp();
+  std::string GetStdoutFromCommand(std::string cmd);
+  void createFile(std::string governor, std::string app, std::string iteration);
+  void writeToFile(std::string text);
 };
+
 #endif
