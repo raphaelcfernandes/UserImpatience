@@ -1,12 +1,12 @@
 #ifndef ADBMANAGER_H
 #define ADBMANAGER_H
-#include <chrono>
+
 #include <iostream>
 #include <string>
-#include <thread>
 #include "responseTime.hpp"
 
 class AdbManager {
+  ResponseTime responseTime;
  public:
   // Mid button responsable to minimize all apps coordinate
   std::string midButtonAndroid = "734 2540";
@@ -26,5 +26,6 @@ class AdbManager {
   void setGovernorInUserImpatienceApp(std::string governor);
   void sleep(int timeInMs);
   void keyevent(int code, bool saveToFile);
+  void closeApp();
 };
 #endif

@@ -2,6 +2,10 @@ Todo
 
 create test flow
 fix uimpatience db
+Criar media de consumo usando 100ms e 5V(9V)
+Tentar criar modelo com maximo, minimo e valores intermediarios de frequencia
+Verificar se é melhor reduzir do menor pro maior ou reduzir todas as frequencias ao mesmo tempo
+Procurar algum paper sobre response time dos apps
 
 test youtube with diferente niveis de cpu:
 only cpu0 at max:

@@ -18,6 +18,10 @@ std::time_t Generic::getCurrentTimestamp() {
   return millis;
 }
 
+void Generic::sleep(int timeInMs) {
+  std::this_thread::sleep_for(std::chrono::milliseconds(timeInMs));
+}
+
 std::string Generic::GetStdoutFromCommand(std::string cmd) {
   std::string data;
   FILE* stream;

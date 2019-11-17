@@ -3,6 +3,11 @@
 AdbManager::AdbManager(){};
 AdbManager::~AdbManager(){};
 
+void AdbManager::closeApp() {
+  tap("1159 2481", true);
+  swipe("1014 2132", "84 2132", 100, true);
+}
+
 void AdbManager::tap(std::string position, bool saveToFile) {
   std::string cmd = "adb shell input tap " + position;
   if (saveToFile) {
@@ -10,7 +15,7 @@ void AdbManager::tap(std::string position, bool saveToFile) {
   }
   std::cout << cmd << std::endl;
   popen(cmd.c_str(), "r");
-  sleep(1000);
+  responseTime.calculateResponseTime();
 }
 
 void AdbManager::swipe(std::string from, std::string to, int time,
@@ -27,11 +32,7 @@ void AdbManager::swipe(std::string from, std::string to, int time,
     Generic::getInstance()->writeToFile("swipe");
   }
   popen(cmd.c_str(), "r");
-  sleep(1000);
-}
-
-void AdbManager::sleep(int timeInMs) {
-  std::this_thread::sleep_for(std::chrono::milliseconds(timeInMs));
+  responseTime.calculateResponseTime();
 }
 
 void AdbManager::typeWithKeyboard(std::string text, bool saveToFile) {
@@ -46,23 +47,22 @@ void AdbManager::typeWithKeyboard(std::string text, bool saveToFile) {
     if (saveToFile) {
       Generic::getInstance()->writeToFile("typeKeyboard");
     }
+    std::cout << "typing " << c << std::endl;
     popen(cmd.c_str(), "r");
-    sleep(500);
+    responseTime.calculateResponseTime();
   }
 }
 
 void AdbManager::turnScreenOnAndUnlock() {
   std::string cmd = "adb shell input keyevent 26";
   popen(cmd.c_str(), "r");
-  sleep(1000);
+  Generic::getInstance()->sleep(1000);
   cmd = "adb shell input keyevent 82";
   popen(cmd.c_str(), "r");
 }
 
 void AdbManager::setGovernorInUserImpatienceApp(std::string governor) {
-  std::string cmd = "adb shell input keyevent 3";
-  popen(cmd.c_str(), "r");
-  sleep(1000);
+  keyevent(3, false);
   tap(mainMenuCoordinate, false);
   tap(quickSearchAppCoordinate, false);
   typeWithKeyboard("battery", false);
@@ -92,13 +92,15 @@ void AdbManager::setGovernorInUserImpatienceApp(std::string governor) {
   tap("124 362", false);
   // Activate
   tap("479 602", false);
+  Generic::getInstance()->sleep(4000);
 }
 
 void AdbManager::keyevent(int code, bool saveToFile) {
   std::string cmd = "adb shell input keyevent " + std::to_string(code);
+  std::cout << cmd << std::endl;
   if (saveToFile) {
     Generic::getInstance()->writeToFile("keyevent");
   }
   popen(cmd.c_str(), "r");
-  sleep(1000);
+  responseTime.calculateResponseTime();
 }

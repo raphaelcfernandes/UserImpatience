@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <thread>
 
 class Generic {
  private:
@@ -18,6 +19,7 @@ class Generic {
   std::string GetStdoutFromCommand(std::string cmd);
   void createFile(std::string governor, std::string app, std::string iteration);
   void writeToFile(std::string event);
+  void sleep(int timeInMs);
 };
 
 #endif
