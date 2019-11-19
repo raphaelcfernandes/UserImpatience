@@ -14,7 +14,7 @@ void Gmail::gmailScript() {
   // Scroll down screen
   adb.swipe("880 1452", "880 342", 2000, true);
   // Click to return to all mails
-  adb.tap("67 212", true);
+  adb.keyevent(4, true);
   // Clicked to write email
   adb.tap("1303 2230", true);
   // Any address

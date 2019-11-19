@@ -144,7 +144,7 @@ class DataQ:
 class Tester:
     governor = ["interactive", "performance",
                 "ondemand", "conservative", "powersave"]
-    apps = ["spotify"]
+    apps = ["spotify", "gmail", "chrome"]
     dataq = DataQ()
 
     def __init__(self):
@@ -252,7 +252,7 @@ class Tester:
                             bytes, byteorder='little', signed=True)
                         result = result >> 2
                         result = result << 2
-                        result = (10*(result/32768))
+                        result = (10*(result/32768))/11
                         acum += result
                         cont += 1
                         # datetime.now().strftime("%H:%M:%S.%f"))
