@@ -36,10 +36,10 @@ class DataQ:
 
     def __init__(self):
         self.acquiring = False
-        self.firstConfig(0)
+        self.firstConfig()
         self.measurement_rate = self.dividend/self.srate
 
-    def firstConfig(self, ps):
+    def firstConfig(self):
         # Keep the packet size small for responsiveness
         # ps 0 Make packet size 16 bytes (DEFAULT)
         # ps 1 Make packet size 32 bytes
@@ -49,21 +49,21 @@ class DataQ:
         # ps 5 Make packet size 512 bytes
         # ps 6 Make packet size 1024 bytes
         # ps 7 Make packet size 2048 bytes
-        if(ps == 0):
+        if(self.ps == 0):
             self.packet_size = 16
-        elif(ps == 1):
+        elif(self.ps == 1):
             self.packet_size = 32
-        elif(ps == 2):
+        elif(self.ps == 2):
             self.packet_size = 64
-        elif(ps == 3):
+        elif(self.ps == 3):
             self.packet_size = 128
-        elif(ps == 4):
+        elif(self.ps == 4):
             self.packet_size = 256
-        elif(ps == 5):
+        elif(self.ps == 5):
             self.packet_size = 512
-        elif(ps == 6):
+        elif(self.ps == 6):
             self.packet_size = 1024
-        elif(ps == 7):
+        elif(self.ps == 7):
             self.packet_size = 2048
         else:
             sys.exit(-1)
@@ -76,11 +76,8 @@ class DataQ:
         self.send_cmd("encode 0")
         # Set ps 0 means wait 16bytes to be ready from dataQ to read it
         # DataQ will send bursts of 16bytes, or 8 packages of 2 bytes
-        self.send_cmd("ps {}".format(ps))
+        self.send_cmd("ps {}".format(self.ps))
         self.config_scn_lst()
-        self.send_cmd("filter 0 0")
-        self.send_cmd("deca 1")
-        self.send_cmd("dec 1")
         self.send_cmd(f"srate {self.srate}")
 
     def send_cmd(self, command):
@@ -89,7 +86,7 @@ class DataQ:
         if not(self.acquiring):
             # Echo commands if not acquiring
             while True:
-                if(self.ser.inWaiting() > 0):
+                if(self.ser.in_waiting > 0):
                     while True:
                         try:
                             s = self.ser.readline().decode()
@@ -112,8 +109,15 @@ class DataQ:
             self.achan_accumulation_table.append(0)
             position += 1
 
-    """ Discover DATAQ Instruments devices and models.  Note that if multiple devices are connected, only the
-    device discovered first is used. We leave it to you to ensure that it's a DI-1100."""
+    def reset(self):
+        self.ser.reset_input_buffer()
+        self.ser.reset_output_buffer()
+        self.send_cmd("encode 0")
+        # Set ps 0 means wait 16bytes to be ready from dataQ to read it
+        # DataQ will send bursts of 16bytes, or 8 packages of 2 bytes
+        self.send_cmd("ps {}".format(self.ps))
+        self.config_scn_lst()
+        self.send_cmd(f"srate {self.srate}")
 
     def discovery(self):
         # Get a list of active com ports to scan for possible DATAQ Instruments devices
@@ -142,8 +146,7 @@ class DataQ:
 
 
 class Tester:
-    governor = ["interactive", "performance",
-                "ondemand", "conservative", "powersave"]
+    governor = ["interactive"]
     apps = ["spotify", "gmail", "chrome"]
     dataq = DataQ()
 
@@ -152,21 +155,65 @@ class Tester:
         self.runApp = True
         self.filename = ""
 
+    def testBoard(self):
+        acum = 0
+        cont = 0
+        decimation_factor = 100
+        for _ in range(0, 300):
+            start = time.time()
+            if not self.dataq.ser.is_open:
+                # self.dataq.firstConfig()
+                self.dataq.ser.open()
+            self.dataq.acquiring = True
+            print('---------------------------- {}'.format(_))
+            self.dataq.send_cmd("start")
+            while True:
+                # if self.dataq.ser.in_waiting == 0:
+                    # self.dataq.ser.
+                if(self.dataq.ser.in_waiting >= self.dataq.packet_size):
+                    for _ in range(self.dataq.measurements_per_packet):
+                        # Always two bytes per sample...read them
+                        bytes = self.dataq.ser.read(2)
+                        result = int.from_bytes(
+                            bytes, byteorder='little', signed=True)
+                        result = result >> 2
+                        result = result << 2
+                        result = (10*(result/32768))/11
+                        acum += result
+                        cont += 1
+                        # datetime.now().strftime("%H:%M:%S.%f"))
+                        if(cont == decimation_factor):
+                            print(acum/decimation_factor)
+                            # f.write("{},{}\n".format(
+                            #     acum/decimation_factor, time.time()))
+                            cont = 0
+                            acum = 0
+                if time.time() - start > 2:
+                    break
+            self.dataq.send_cmd("stop")
+            time.sleep(1)
+            self.dataq.ser.reset_input_buffer()
+            self.dataq.ser.reset_output_buffer()
+            self.dataq.ser.flush()
+            self.dataq.ser.close()
+            self.dataq.acquiring = False
+
     def test(self):
         try:
             # Create a folder for each governor
             for gov in self.governor:
                 if not os.path.exists("results/{}".format(gov)):
                     os.mkdir("results/{}".format(gov))
+                if not os.path.exists("adbTouchEvents"):
+                    os.mkdir("adbTouchEvents")
                 if not os.path.exists("adbTouchEvents/{}".format(gov)):
                     os.mkdir("adbTouchEvents/{}".format(gov))
                 # Tell the c++ code to set the governor before executing the array of apps
                 if self.setGovernor:
-                    self.runApp = False
-                    self.setGovernor = False
                     # Wait the c++ code to set the governor and then start executing apps
                     if os.system("./cpu set {}".format(gov)) == 0:
                         self.runApp = True
+                        self.setGovernor = False
                 if self.runApp:
                     for app in self.apps:
                         # Create folder for each app inside each governor
@@ -175,61 +222,18 @@ class Tester:
                         if not os.path.exists("adbTouchEvents/{}/{}".format(gov, app)):
                             os.mkdir("adbTouchEvents/{}/{}".format(gov, app))
                         print("Python running {} with {}".format(app, gov))
-                        for i in range(0, 30):
+                        for i in range(0, 1):
                             print("running {} {} iteration: {}".format(gov, app, i))
                             # Save file to its respective governor and app
                             self.filename = "results/{}/{}/{}.txt".format(
                                 gov, app, i)
                             self.executeTest(app, gov, i)
-                        self.setGovernor = True
-                        self.runApp = False
-            self.dataq.ser.close()
+                    self.setGovernor = True
+                    self.runApp = False
         except Exception as e:
             print(e)
-
-    def testBoard(self):
-        print('testBoard')
-        # self.dataq.ser.reset_input_buffer()
-        acum = 0
-        cont = 0
-        decimation_factor = 1000
-        for i in range(0, 300):
-            self.dataq.acquiring = True
-            self.dataq.send_cmd("start")
-            start = time.time()
-            print("running test {}".format(i))
-            while True:
-                end = time.time()
-                if(self.dataq.ser.inWaiting() >= self.dataq.packet_size):
-                    for _ in range(self.dataq.measurements_per_packet):
-                        # Always two bytes per sample...read them
-                        bytes = self.dataq.ser.read(2)
-                        assert not bytes is None, "PAU"
-                        result = int.from_bytes(
-                            bytes, byteorder='little', signed=True)
-                        assert isinstance(result, int), "PAU"
-                        result = result >> 2
-                        result = result << 2
-                        result = (10*(result/32768))
-                        acum += result
-                        cont += 1
-                        # datetime.now().strftime("%H:%M:%S.%f"))
-                        if(cont == decimation_factor):
-                            print(str(acum/decimation_factor) + ", " +
-                                  str(time.time()), end="\r")
-                            cont = 0
-                            acum = 0
-                    if (end - start) > 2:
-                        print("Finishing while")
-                        break
-            print("will send stop")
-            self.dataq.send_cmd("stop")
-            time.sleep(1)
-            self.dataq.send_cmd("stop")
-            time.sleep(1)
-            self.dataq.ser.reset_input_buffer()
-            self.dataq.ser.reset_output_buffer()
-            self.dataq.acquiring = False
+        finally:
+            self.dataq.ser.close()
 
     def executeTest(self, app, gov, iteration):
         f = open(self.filename, "w+")
@@ -242,7 +246,7 @@ class Tester:
             mythread.setName("C++ execution")
             mythread.start()
             self.dataq.acquiring = True
-            self.dataq.send_cmd("start")
+            self.dataq.send_cmd("start 0")
             while True:
                 if(self.dataq.ser.inWaiting() >= self.dataq.packet_size):
                     for _ in range(self.dataq.measurements_per_packet):
@@ -263,15 +267,14 @@ class Tester:
                             acum = 0
                 if not mythread.is_alive():
                     f.close()
-                    print("Finishing while")
+                    if not f.close:
+                        Exception("PAU")
                     break
-            print("will send stop")
             self.dataq.send_cmd("stop")
             time.sleep(1)
-            self.dataq.send_cmd("stop")
-            time.sleep(1)
-            self.dataq.acquiring = False
             self.dataq.ser.reset_input_buffer()
+            self.dataq.ser.reset_output_buffer()
+            self.dataq.acquiring = False
 
 
 class MyThread(threading.Thread):
@@ -290,5 +293,5 @@ class MyThread(threading.Thread):
 
 if __name__ == '__main__':
     tester = Tester()
-    tester.test()
+    tester.testBoard()
     sys.exit(0)

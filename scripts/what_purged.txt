@@ -1,0 +1,5 @@
+Purged:
+
+bluez
+blueman
+blueberry (main linux bluetooth lib)
