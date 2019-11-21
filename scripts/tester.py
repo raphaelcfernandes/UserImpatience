@@ -1,4 +1,5 @@
-from dataq import DataQ
+from dataq import DataQProcess
+from multiprocessing import Process, Queue
 from uimpatienceThread import MyThread
 import time
 import os
@@ -7,49 +8,15 @@ import os
 class Tester:
     governor = ["interactive"]
     apps = ["spotify", "gmail", "chrome"]
-    dataq = DataQ()
+    dataQ = DataQProcess()
+    queue = Queue()
 
     def __init__(self):
         self.setGovernor = True
         self.runApp = True
         self.filename = ""
-
-    def testBoard(self):
-        acum = 0
-        cont = 0
-        decimation_factor = 100
-        for _ in range(0, 300):
-            start = time.time()
-            if not self.dataq.ser.is_open:
-                # self.dataq.firstConfig()
-                self.dataq.ser.open()
-            self.dataq.acquiring = True
-            print('---------------------------- {}'.format(_))
-            self.dataq.send_cmd("start")
-            while True:
-                # if self.dataq.ser.in_waiting == 0:
-                    # self.dataq.ser.
-                if(self.dataq.ser.in_waiting >= self.dataq.packet_size):
-                    for _ in range(self.dataq.measurements_per_packet):
-                        # Always two bytes per sample...read them
-                        bytes = self.dataq.ser.read(2)
-                        result = int.from_bytes(
-                            bytes, byteorder='little', signed=True)
-                        result = result >> 2
-                        result = result << 2
-                        result = (10*(result/32768))/11
-                        acum += result
-                        cont += 1
-                        if(cont == decimation_factor):
-                            print(acum/decimation_factor)
-                            cont = 0
-                            acum = 0
-                if time.time() - start > 2:
-                    break
-            self.dataq.send_cmd("stop")
-            time.sleep(1)
-            self.dataq.ser.reset_input_buffer()
-            self.dataq.acquiring = False
+        self.p = Process(target=self.dataQ.spawnProcess, args=(self.queue,))
+        self.p.start()
 
     def test(self):
         try:
@@ -85,45 +52,17 @@ class Tester:
                     self.runApp = False
         except Exception as e:
             print(e)
-        finally:
-            self.dataq.ser.close()
 
     def executeTest(self, app, gov, iteration):
-        f = open(self.filename, "w+")
-        f.write('amperes,timestamp\n')
-        acum = 0
-        cont = 0
-        decimation_factor = 500
-        if os.system("./cpu search {}".format(app)) == 0:
-            mythread = MyThread("run", app, gov, iteration)
-            mythread.setName("C++ execution")
-            mythread.start()
-            self.dataq.acquiring = True
-            self.dataq.send_cmd("start 0")
-            while True:
-                if(self.dataq.ser.inWaiting() >= self.dataq.packet_size):
-                    for _ in range(self.dataq.measurements_per_packet):
-                        # Always two bytes per sample...read them
-                        bytes = self.dataq.ser.read(2)
-                        result = int.from_bytes(
-                            bytes, byteorder='little', signed=True)
-                        result = result >> 2
-                        result = result << 2
-                        result = (10*(result/32768))/11
-                        acum += result
-                        cont += 1
-                        # datetime.now().strftime("%H:%M:%S.%f"))
-                        if(cont == decimation_factor):
-                            f.write("{},{}\n".format(
-                                acum/decimation_factor, time.time()))
-                            cont = 0
-                            acum = 0
-                if not mythread.is_alive():
-                    f.close()
-                    if not f.close:
-                        Exception("PAU")
-                    break
-            self.dataq.send_cmd("stop")
-            time.sleep(1)
-            self.dataq.ser.reset_input_buffer()
-            self.dataq.acquiring = False
+        k = ["READ", "WAIT", "STOP"]
+        for i in k:
+            self.queue.put(i)
+            time.sleep(5)
+        self.p.join()
+        self.queue.close()
+        # f = open(self.filename, "w+")
+        # f.write('amperes,timestamp\n')
+        # if os.system("./cpu search {}".format(app)) == 0:
+        #     mythread = MyThread("run", app, gov, iteration)
+        #     mythread.setName("C++ execution")
+        #     mythread.start()

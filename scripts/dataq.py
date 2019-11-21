@@ -122,3 +122,52 @@ class DataQ:
             print("Please connect a DATAQ Instruments device")
             input("Press ENTER to try again...")
             return(False)
+
+
+class DataQProcess:
+    def __init__(self):
+        self.command = "WAIT"
+        self.decimation_factor = 100
+        self.dataQ = DataQ()
+
+    def spawnProcess(self, queue):
+        f = open("test.txt", "w+")
+        f.write('amperes,timestamp\n')
+        acquiring = True
+        self.dataQ.send_cmd("start")
+        acum = 0
+        cont = 0
+        while True:
+            # Check if main thread put something to Queue
+            # It could be:
+            # READ -> to save reading from dataQ
+            # WAIT -> to stop saving reading data from dataQ
+            # STOP -> to stop dataQ
+            if not queue.empty():
+                self.command = queue.get()
+                if self.command == "STOP":
+                    acquiring = False
+                    break
+            if self.command == "WAIT":
+                self.dataQ.ser.reset_input_buffer()
+                continue
+            elif (self.dataQ.ser.in_waiting >= self.dataQ.packet_size) and self.command == "READ":
+                for _ in range(self.dataQ.measurements_per_packet):
+                    # Always two bytes per sample...read them
+                    bytes = self.dataQ.ser.read(2)
+                    result = int.from_bytes(
+                        bytes, byteorder='little', signed=True)
+                    result = result >> 2
+                    result = result << 2
+                    result = (10*(result/32768))/11
+                    acum += result
+                    cont += 1
+                    if(cont == self.decimation_factor):
+                        f.write("{},{}\n".format(
+                            acum/self.decimation_factor, time.time()))
+                        cont = 0
+                        acum = 0
+        self.dataQ.send_cmd("stop")
+        self.dataQ.ser.reset_input_buffer()
+        self.dataQ.ser.close()
+        f.close()
