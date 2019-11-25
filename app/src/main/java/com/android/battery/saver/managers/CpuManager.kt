@@ -24,14 +24,13 @@ object CpuManager {
      */
     fun setGovernorFromSpinner(governor: String) {
         if(governor != "UImpatience") {
-            startMpDecision()
             for(i in 0 until numberOfCores) {
                 if(!cpuCores[i]!!.status)
                     turnCoreOn(i)
                 writeGovernorToCore(i,governor)
             }
+            startMpDecision()
         } else {
-            stopMpDecision()
             start()
         }
     }
@@ -87,6 +86,7 @@ object CpuManager {
     }
 
     fun start() {
+        stopMpDecision()
         for (i in 0 until numberOfCores) {
             //Check if core is on/off
             if (!checkIfCoreIsOnFromInternalFile(i)) {

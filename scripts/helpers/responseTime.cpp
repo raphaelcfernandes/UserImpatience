@@ -45,7 +45,7 @@ int ResponseTime::calculateResponseTime() {
     // std::cout << "Cpu usage - (cat cost): " << DIFF_USAGE << std::endl;
     PREV_TOTAL = TOTAL;
     PREV_IDLE = IDLE;
-    media += DIFF_USAGE;
+    // media += DIFF_USAGE;
     // if (cont == 1200) break;
     // std::cout << cont << std::endl;
     // std::cout << "Gasto: " << DIFF_USAGE + 18 << std::endl;

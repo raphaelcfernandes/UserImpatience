@@ -22,6 +22,14 @@ only cpu0 at mid freq value:
 
 ./rdumtool --device-type=UM24C --bluetooth-device=00:BA:55:57:B5:58 --watch 1 --json >> gmail_ondemand.txt
 
+Nexus 5:
+cat 10ms:
+    - Interactive: 54
+    - Performance: 27
+    - Conservative: 42
+    - Powersave: 61
+    - Ondemand: 32
+
 gasto do cat (interactive):
 
 10ms: 25% em media

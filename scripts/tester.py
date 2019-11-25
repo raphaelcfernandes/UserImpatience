@@ -6,8 +6,8 @@ import os
 
 
 class Tester:
-    governor = ["interactive"]
-    apps = ["spotify", "gmail", "chrome"]
+    governor = ['powersave']
+    apps = ["youtube"]
     dataQ = DataQProcess()
     queue = Queue()
 
@@ -41,8 +41,7 @@ class Tester:
                             os.mkdir("results/{}/{}".format(gov, app))
                         if not os.path.exists("adbTouchEvents/{}/{}".format(gov, app)):
                             os.mkdir("adbTouchEvents/{}/{}".format(gov, app))
-                        print("Python running {} with {}".format(app, gov))
-                        for i in range(0, 1):
+                        for i in range(17, 30):
                             print("running {} {} iteration: {}".format(gov, app, i))
                             # Save file to its respective governor and app
                             self.filename = "results/{}/{}/{}.txt".format(
@@ -52,17 +51,16 @@ class Tester:
                     self.runApp = False
         except Exception as e:
             print(e)
+        finally:
+            self.queue.put("STOP")
+            self.p.join()
+            self.queue.close()
 
     def executeTest(self, app, gov, iteration):
-        k = ["READ", "WAIT", "STOP"]
-        for i in k:
-            self.queue.put(i)
-            time.sleep(5)
-        self.p.join()
-        self.queue.close()
-        # f = open(self.filename, "w+")
-        # f.write('amperes,timestamp\n')
-        # if os.system("./cpu search {}".format(app)) == 0:
-        #     mythread = MyThread("run", app, gov, iteration)
-        #     mythread.setName("C++ execution")
-        #     mythread.start()
+        mythread = MyThread("run", app, gov, iteration)
+        if os.system("./cpu search {}".format(app)) == 0:
+            self.queue.put(f"RUN:{app}:{gov}:{iteration}")
+            mythread.setName("C++ execution")
+            mythread.start()
+        while mythread.is_alive():
+            continue

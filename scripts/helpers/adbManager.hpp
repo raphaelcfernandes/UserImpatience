@@ -8,14 +8,22 @@
 class AdbManager {
   ResponseTime responseTime;
  public:
-  // Mid button responsable to minimize all apps coordinate
-  std::string midButtonAndroid = "734 2540";
+  // Mid button responsable to minimize all apps coordinate Nexus 6
+  std::string midButtonAndroid = "734 2540"; 
+  // Mid button responsable to minimize all apps coordinate Nexus 5
+  // std::string midButtonAndroid = "535 1838"; 
   // Main menu coordinate on Nexus 6
   std::string mainMenuCoordinate = "745 2237";
+  // Main menu coordinate on Nexus 5
+  // std::string mainMenuCoordinate = "530 1668";
   // Quick search app in the main menu coordinate on Nexus 6
   std::string quickSearchAppCoordinate = "218 228";
-  // Coordinate after search for app
+  // Quick search app in the main menu coordinate on Nexus 5
+  // std::string quickSearchAppCoordinate = "570 181";
+  // Coordinate after search for app on Nexus 6
   std::string appLocationCoordinate = "236 478";
+  // Coordinate after search for app on Nexus 5
+  // std::string appLocationCoordinate = "168 420";
 
   AdbManager();
   virtual ~AdbManager();

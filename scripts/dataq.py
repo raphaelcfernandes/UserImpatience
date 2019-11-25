@@ -127,16 +127,17 @@ class DataQ:
 class DataQProcess:
     def __init__(self):
         self.command = "WAIT"
-        self.decimation_factor = 100
+        self.decimation_factor = 250
         self.dataQ = DataQ()
 
     def spawnProcess(self, queue):
-        f = open("test.txt", "w+")
-        f.write('amperes,timestamp\n')
         acquiring = True
         self.dataQ.send_cmd("start")
         acum = 0
         cont = 0
+        app = ""
+        gov = ""
+        iteration = ""
         while True:
             # Check if main thread put something to Queue
             # It could be:
@@ -145,13 +146,25 @@ class DataQProcess:
             # STOP -> to stop dataQ
             if not queue.empty():
                 self.command = queue.get()
+                if "RUN" in self.command:
+                    parser = self.command.split(":")
+                    # Retrieve RUN from request
+                    self.command = parser[0]
+                    # Retrieve app from request
+                    app = parser[1]
+                    # Retrieve gov from request
+                    gov = parser[2]
+                    # Retrieve iteration from request
+                    iteration = parser[3]
+                    f = open(f"results/{gov}/{app}/{iteration}.txt", "w+")
+                    f.write('amperes,timestamp\n')
                 if self.command == "STOP":
                     acquiring = False
                     break
-            if self.command == "WAIT":
-                self.dataQ.ser.reset_input_buffer()
-                continue
-            elif (self.dataQ.ser.in_waiting >= self.dataQ.packet_size) and self.command == "READ":
+                if self.command == "WAIT":
+                    self.dataQ.ser.reset_input_buffer()
+                    continue
+            if (self.dataQ.ser.in_waiting >= self.dataQ.packet_size) and self.command == "RUN":
                 for _ in range(self.dataQ.measurements_per_packet):
                     # Always two bytes per sample...read them
                     bytes = self.dataQ.ser.read(2)
@@ -167,6 +180,8 @@ class DataQProcess:
                             acum/self.decimation_factor, time.time()))
                         cont = 0
                         acum = 0
+            elif self.command != "RUN":
+                self.dataQ.ser.reset_input_buffer()
         self.dataQ.send_cmd("stop")
         self.dataQ.ser.reset_input_buffer()
         self.dataQ.ser.close()

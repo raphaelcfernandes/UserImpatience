@@ -5,10 +5,10 @@
 #include "appScripts/spotify.hpp"
 #include "appScripts/youtube.hpp"
 #include "helpers/generic.hpp"
-
+#include "helpers/responseTime.hpp"
 using namespace std;
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
   if (argc < 2) {
     cout << "Number incorrect of parameters" << endl;
     return -1;
@@ -96,4 +96,3 @@ int main(int argc, char* argv[]) {
 // fi
 // #https://rosettacode.org/wiki/Linux_CPU_utilization#UNIX_Shell
 // #https://github.com/Leo-G/DevopsWiki/wiki/How-Linux-CPU-Usage-Time-and-Percentage-is-calculated
-
