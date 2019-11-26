@@ -7,16 +7,41 @@ import os
 
 class Tester:
     governor = ['powersave']
-    apps = ["youtube"]
-    dataQ = DataQProcess()
-    queue = Queue()
+    apps = ["chrome", "spotify", "youtube", "gmail"]
+    # Read interval that userspace background thread will read TA from top in ms
+    # Values in ms
+    timeToReadTA = ["500", "1000", "2000"]
+    # Time to decrease cpu frequency in ms
+    # this is the parameter A
+    # Values in ms
+    decreaseCPUInterval = ["1000", "2000", "4000", "8000"]
+    # Amount of frequency to reduce after A.time has passed
+    decreaseCPUFrequency = ["2", "4", "8"]
+    #(Max - current)/C
+    # Where C is the following measurements
+    marginToIncreaseCpuFrequency = ["1/2", "1/4", "1/8"]
+    # 0 is the user that does not complain at all
+    # 5 is the user that complains with high frequency
+    userImpatienceLevel = [0, 1, 2]
+    # dataQ = DataQProcess()
+    # queue = Queue()
 
     def __init__(self):
         self.setGovernor = True
         self.runApp = True
         self.filename = ""
-        self.p = Process(target=self.dataQ.spawnProcess, args=(self.queue,))
-        self.p.start()
+        # self.p = Process(target=self.dataQ.spawnProcess, args=(self.queue,))
+        # self.p.start()
+
+    def testUImpatience(self):
+        cont = 0
+        for readTa in self.timeToReadTA:
+            for decreaseCPUi in self.decreaseCPUInterval:
+                for decreaseCPUf in self.decreaseCPUFrequency:
+                    for incraseCPUf in self.marginToIncreaseCpuFrequency:
+                        for impatienceLevel in self.userImpatienceLevel:
+                            if not os.path.exists("results/uimpatience"):
+                                os.mkdir("results/uimpatience")
 
     def test(self):
         try:

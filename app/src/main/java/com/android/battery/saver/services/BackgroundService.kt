@@ -191,8 +191,10 @@ class BackgroundService : Service() {
     }
 
     override fun onDestroy() {
+        println("ondeStroy ")
         unregisterReceiver(broadcastRcv)
         scheduler.shutdown()
+        CpuManager.stop();
         super.onDestroy()
     }
 }
