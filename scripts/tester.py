@@ -8,13 +8,13 @@ import os
 class Tester:
     governor = ['powersave']
     apps = ["chrome", "spotify", "youtube", "gmail"]
-    # Read interval that userspace background thread will read TA from top in ms
-    # Values in ms
-    timeToReadTA = ["500", "1000", "2000"]
-    # Time to decrease cpu frequency in ms
+    # Read interval that userspace background thread will read TA from top in s
+    # Values in s
+    timeToReadTA = ["1", "2"]
+    # Time to decrease cpu frequency in s
     # this is the parameter A
-    # Values in ms
-    decreaseCPUInterval = ["1000", "2000", "4000", "8000"]
+    # Values in s
+    decreaseCPUInterval = ["1", "2", "4", "8"]
     # Amount of frequency to reduce after A.time has passed
     decreaseCPUFrequency = ["2", "4", "8"]
     #(Max - current)/C
@@ -29,28 +29,41 @@ class Tester:
     def __init__(self):
         self.setGovernor = True
         self.runApp = True
-        self.filename = ""
         # self.p = Process(target=self.dataQ.spawnProcess, args=(self.queue,))
         # self.p.start()
 
     def testUImpatience(self):
-        cont = 0
+        if not os.path.exists("results/uimpatience"):
+            os.mkdir("results/uimpatience")
+        if not os.path.exists("adbTouchEvents"):
+            os.mkdir("adbTouchEvents")
+        if not os.path.exists("adbTouchEvents/uimpatience"):
+            os.mkdir("adbTouchEvents/uimpatience")
+        if not os.path.exists("results/uimpatience/readTa"):
+            os.mkdir("results/uimpatience/readTa")
         for readTa in self.timeToReadTA:
             for decreaseCPUi in self.decreaseCPUInterval:
                 for decreaseCPUf in self.decreaseCPUFrequency:
-                    for incraseCPUf in self.marginToIncreaseCpuFrequency:
+                    for increaseCPUf in self.marginToIncreaseCpuFrequency:
                         for impatienceLevel in self.userImpatienceLevel:
-                            if not os.path.exists("results/uimpatience"):
-                                os.mkdir("results/uimpatience")
+                            path = "results/uimpatience/{}_{}_{}_{}_{}".format(
+                                readTa, decreaseCPUi, decreaseCPUf, increaseCPUf.replace("/", "|"), impatienceLevel)
+                            if not os.path.exists(path):
+                                os.mkdir(path)
+                            # for i in range(0, 30):
+                            #     f = open(
+                            #         f"results/uimpatience/{readTa}_{decreaseCPUi}_{decreaseCPUf}_{increaseCPUf.replace('/','|')}_{impatienceLevel}/{i}.txt", "w+")
+                            #     f.write("amperes,timestamp\n")
+                            #     f.close()
 
     def test(self):
         try:
             # Create a folder for each governor
+            if not os.path.exists("adbTouchEvents"):
+                os.mkdir("adbTouchEvents")
             for gov in self.governor:
                 if not os.path.exists("results/{}".format(gov)):
                     os.mkdir("results/{}".format(gov))
-                if not os.path.exists("adbTouchEvents"):
-                    os.mkdir("adbTouchEvents")
                 if not os.path.exists("adbTouchEvents/{}".format(gov)):
                     os.mkdir("adbTouchEvents/{}".format(gov))
                 # Tell the c++ code to set the governor before executing the array of apps
@@ -66,11 +79,9 @@ class Tester:
                             os.mkdir("results/{}/{}".format(gov, app))
                         if not os.path.exists("adbTouchEvents/{}/{}".format(gov, app)):
                             os.mkdir("adbTouchEvents/{}/{}".format(gov, app))
-                        for i in range(17, 30):
+                        for i in range(0, 30):
                             print("running {} {} iteration: {}".format(gov, app, i))
                             # Save file to its respective governor and app
-                            self.filename = "results/{}/{}/{}.txt".format(
-                                gov, app, i)
                             self.executeTest(app, gov, i)
                     self.setGovernor = True
                     self.runApp = False

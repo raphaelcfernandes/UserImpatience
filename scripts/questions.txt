@@ -39,3 +39,49 @@ gasto do cat (interactive):
 
 gasto do cat (powersave):
 100ms: 18% em media
+while true; do cat cpu*/cpufreq/scaling_cur_freq; cat cpu*/cpufreq/scaling_governor; echo '\n'; sleep .1; done
+
+
+
+//                        if (checkLastAppState(lastApp))
+//                            saveLastAppState(lastApp)
+//                        appConfiguration = usageInfoDAO.getDataFromAppByName(currentApp)
+                //The app with this package name does not exist in the DB
+                //THIS IS A TOTALLY NEW APP THAT WAS NOT EXECUTED BEFORE
+//                        if (appConfiguration.appName == "") {
+                //Scale cpu to max
+//                            CpuManager.setAllCoresToMax()
+//                        } else {
+                //Scale cpu to the specific app
+//                            CpuManager.scaleCpuToApp(
+//                                    appConfiguration.coreFrequencies,
+//                                    appConfiguration.coreThresholds
+//                            )
+//                        }
+//                        lastApp = currentApp
+//                        clock = 0
+//                    } else {
+//                        //TODO
+//                        //Setar novo threshold quando ja exisita threshold e random deu <9 e usuario n reclamou
+//                        clock += readTAinterval
+//                        if (clock >= decreaseCPUInterval) {
+//                            CpuManager.scaleCpuDown(amountOfFrequencyToReduce)
+//                            clock = 0
+//                        }
+//                    }
+//                }
+            }
+//            else {
+//                //Set cpu to min just once
+//                if (!needsToReload) {
+//                    //Need to save the state of the last running app if it changed
+//                    if (checkLastAppState(lastApp))
+//                        saveLastAppState(lastApp)
+//                    //Set isScreenOn to off
+//                    isScreenOn = false
+//                    //Set the cpu to min possible
+//                    CpuManager.setToMinSpeed()
+//                    needsToReload = true
+//                    lastApp = ""
+//                }
+//            }

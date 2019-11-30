@@ -46,5 +46,6 @@ class AdbManager {
     void sleep(int timeInMs);
     void keyevent(int code, bool saveToFile);
     void closeApp();
+    void uimpatienceClompainNotification(bool saveToFile);
 };
 #endif

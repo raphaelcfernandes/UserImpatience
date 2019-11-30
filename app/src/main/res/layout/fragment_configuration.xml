@@ -20,7 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <com.google.android.material.textfield.TextInputEditText
-                android:hint="Time to read TA in ms"
+                android:hint="@string/readTAinterval"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="numberDecimal">
@@ -33,7 +33,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <com.google.android.material.textfield.TextInputEditText
-                android:hint="Time window to reduce CPU freq in ms"
+                android:hint="@string/reduceCpuTime"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="number">
@@ -45,10 +45,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <com.google.android.material.textfield.TextInputEditText
-                android:hint="Amount of frequency to increase"
+                android:hint="@string/increaseFreq"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="text">
+                android:inputType="number">
             </com.google.android.material.textfield.TextInputEditText>
         </com.google.android.material.textfield.TextInputLayout>
         <com.google.android.material.textfield.TextInputLayout
@@ -57,17 +57,30 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <com.google.android.material.textfield.TextInputEditText
-                android:hint="Amount of frequency to reduce after A has passed"
+                android:hint="@string/reduceCpuFreq"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="number">
             </com.google.android.material.textfield.TextInputEditText>
         </com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/impatienceLevel"
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <com.google.android.material.textfield.TextInputEditText
+                android:hint="@string/userImpatienceLevel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number">
+            </com.google.android.material.textfield.TextInputEditText>
+        </com.google.android.material.textfield.TextInputLayout>
+
         <Button
             android:id="@+id/save"
             android:enabled="false"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Save"></Button>
+            android:text="Save" />
     </LinearLayout>
 </LinearLayout>

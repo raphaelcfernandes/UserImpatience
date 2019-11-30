@@ -19,6 +19,7 @@ class ConfigurationFragment : Fragment() {
         val timeWindow = view.timeWindow
         val amountToIncrease = view.increaseFrequency
         val reduceFrequencyAmount = view.reduceFrequency
+        val impatienceLevel = view.impatienceLevel
         val spinner: Spinner = view.findViewById(R.id.governors_spinner)
         spinner.onItemSelectedListener = SpinnerActivity(view, context!!)
         val button = view.save
@@ -27,13 +28,15 @@ class ConfigurationFragment : Fragment() {
             Preferences.setGovernor(context!!, governor)
             if (governor == "UImpatience") {
                 Preferences.setReadTAInterval(context!!,
-                        readTA.editText?.text.toString())
+                        readTA.editText?.text.toString().toInt())
                 Preferences.setDecreaseCPUInterval(context!!,
                         timeWindow.editText?.text.toString().toInt())
                 Preferences.setMarginToIncreaseCpu(context!!,
-                        amountToIncrease.editText?.text.toString())
+                        amountToIncrease.editText?.text.toString().toInt())
                 Preferences.setDecreaseCPUFrequency(context!!,
                         reduceFrequencyAmount.editText?.text.toString().toInt())
+                Preferences.setImpatienceLevel(context!!, impatienceLevel.editText?.text.toString().toInt())
+                Preferences.setIteration(context!!, 0)
             }
 
             Snackbar.make(view, "$governor selected", Snackbar.LENGTH_SHORT).show()

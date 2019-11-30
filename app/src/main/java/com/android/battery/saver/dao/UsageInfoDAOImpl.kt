@@ -1,7 +1,6 @@
 package com.android.battery.saver.dao
 
 import android.content.Context
-import android.database.Cursor
 import com.android.battery.saver.database.DBContract
 import com.android.battery.saver.database.UsageInfoDBHelper
 import com.android.battery.saver.managers.CpuManager

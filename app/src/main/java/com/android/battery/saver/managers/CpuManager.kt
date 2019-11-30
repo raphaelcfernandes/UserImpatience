@@ -16,22 +16,22 @@ object CpuManager {
     private var totalOfFrequencies: Int = 0
 
     init {
-        start()
+        initializeCpuManagerGovernor()
     }
 
     /**
      * Set the governor to what the user selected
      */
     fun setGovernorFromSpinner(governor: String) {
-        if(governor != "UImpatience") {
-            for(i in 0 until numberOfCores) {
-                if(!cpuCores[i]!!.status)
+        if (governor != "UImpatience") {
+            for (i in 0 until numberOfCores) {
+                if (!cpuCores[i]!!.status)
                     turnCoreOn(i)
-                writeGovernorToCore(i,governor)
+                writeGovernorToCore(i, governor)
             }
             startMpDecision()
         } else {
-            start()
+            initializeCpuManagerGovernor()
         }
     }
 
@@ -40,7 +40,7 @@ object CpuManager {
             if (cpuFrequencies[i] == 0) {
                 turnCoreOff(i)
             } else {
-                if(!cpuCores[i]!!.status)
+                if (!cpuCores[i]!!.status)
                     turnCoreOn(i)
                 setCoreFrequency(i, cpuFrequencies[i])
             }
@@ -85,7 +85,7 @@ object CpuManager {
         returnDeviceControlToAndroid()
     }
 
-    fun start() {
+    private fun initializeCpuManagerGovernor() {
         stopMpDecision()
         for (i in 0 until numberOfCores) {
             //Check if core is on/off
@@ -214,9 +214,6 @@ object CpuManager {
             }
             //Write the default governor to it
             writeGovernorToCore(i, defaultGovernor)
-            //Turn off core
-            //Do I really need to do this?
-//            turnCoreOff(i)
         }
         startMpDecision()
     }
@@ -441,7 +438,7 @@ object CpuManager {
 
     fun setToMinSpeed() {
         for (i in 0 until numberOfCores) {
-            if(i < numberOfCores/2) {
+            if (i < numberOfCores / 2) {
                 turnCoreOn(i)
                 setCoreFrequency(i, cpuCores[i]!!.frequencies[0])
             } else {

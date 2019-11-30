@@ -18,6 +18,11 @@ void AdbManager::tap(std::string position, bool saveToFile) {
     responseTime.calculateResponseTime();
 }
 
+void AdbManager::uimpatienceClompainNotification(bool saveToFile) {
+    swipe("884 7", "884 630", 100, saveToFile);
+    tap("851 519", saveToFile);
+}
+
 void AdbManager::swipe(std::string from, std::string to, int time,
                        bool saveToFile) {
     std::string cmd = "";
@@ -49,7 +54,7 @@ void AdbManager::typeWithKeyboard(std::string text, bool saveToFile) {
         }
         std::cout << "typing " << c << std::endl;
         popen(cmd.c_str(), "r");
-        responseTime.calculateResponseTime();
+        Generic::getInstance()->sleep(500);
     }
 }
 
