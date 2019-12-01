@@ -8,6 +8,6 @@ class Spotify {
  public:
   Spotify();
   virtual ~Spotify();
-  void spotifyScript();
+  void spotifyScript(std::string device);
 };
 #endif

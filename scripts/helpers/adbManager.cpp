@@ -1,11 +1,29 @@
 #include "adbManager.hpp"
 
-AdbManager::AdbManager(){};
+AdbManager::AdbManager(std::string device) {
+    if (device == "Nexus 5") {
+        midButtonAndroid = "535 1838";
+        mainMenuCoordinate = "530 1668";
+        quickSearchAppCoordinate = "570 181";
+        appLocationCoordinate = "168 420";
+    } else if (device == "Nexus 6") {
+        midButtonAndroid = "734 2540";
+        mainMenuCoordinate = "745 2237";
+        quickSearchAppCoordinate = "218 228";
+        appLocationCoordinate = "236 478";
+    }
+};
 AdbManager::~AdbManager(){};
 
-void AdbManager::closeApp() {
-    tap("1159 2481", true);
-    swipe("1014 2132", "84 2132", 100, true);
+void AdbManager::closeApp(std::string device) {
+    if (device == "Nexus 5") {
+        tap("852 1855", true);
+        swipe("861 1471", "84 1471", 100, true);
+    }
+    if (device == "Nexus 6") {
+        tap("1159 2481", true);
+        swipe("1014 2132", "84 2132", 100, true);
+    }
 }
 
 void AdbManager::tap(std::string position, bool saveToFile) {
@@ -54,7 +72,7 @@ void AdbManager::typeWithKeyboard(std::string text, bool saveToFile) {
         }
         std::cout << "typing " << c << std::endl;
         popen(cmd.c_str(), "r");
-        Generic::getInstance()->sleep(500);
+        Generic::getInstance()->sleep(700);
     }
 }
 

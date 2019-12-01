@@ -11,6 +11,6 @@ class Youtube {
  public:
   Youtube();
   virtual ~Youtube();
-  void youtubeScript();
+  void youtubeScript(std::string device);
 };
 #endif

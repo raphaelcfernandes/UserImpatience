@@ -8,6 +8,6 @@ class Gmail {
  public:
   Gmail();
   virtual ~Gmail();
-  void gmailScript();
+  void gmailScript(std::string device);
 };
 #endif

@@ -9,11 +9,14 @@ import android.os.IBinder
 import android.util.Log
 import com.android.battery.saver.dao.TestInfoDAOImpl
 import com.android.battery.saver.dao.UsageInfoDAOImpl
+import com.android.battery.saver.dao.UserComplainDAOImpl
+import com.android.battery.saver.helper.Preferences
 import com.android.battery.saver.logger.Logger
 import com.android.battery.saver.managers.AppManager
 import com.android.battery.saver.managers.CpuManager
 import com.android.battery.saver.model.TestsInfoModel
 import com.android.battery.saver.model.UsageInfoModel
+import com.android.battery.saver.model.UserComplainModel
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit.SECONDS
@@ -22,8 +25,9 @@ import java.util.concurrent.TimeUnit.SECONDS
 class BackgroundService : Service() {
     //Objects
     private val scheduler = Executors.newSingleThreadScheduledExecutor()
-    private lateinit var usageInfoDAO: UsageInfoDAOImpl
-    private lateinit var testInfoDao: TestInfoDAOImpl
+    private lateinit var usageInfoDAOImpl: UsageInfoDAOImpl
+    private lateinit var testInfoDAOImpl: TestInfoDAOImpl
+    private lateinit var userComplainDAOImpl: UserComplainDAOImpl
     private lateinit var runnable: Runnable
 
     //Variable
@@ -34,18 +38,26 @@ class BackgroundService : Service() {
             "",
             0, arrayListOf(), arrayListOf()
     )
-    private var userComplained = false
     private var clock = 0
     private var decreaseCPUInterval = 0
     private var readTAinterval: Int = 0
     private var decreaseCPUFrequency = 0
     private var increaseCpuAfterComplaining = 0
     private var uimpatienceLevel = 0
+    private lateinit var currentApp: String
+    private var lastApp = ""
+    private var iteration = 0
 
     override fun onCreate() {
         super.onCreate()
-        usageInfoDAO = UsageInfoDAOImpl(this)
-        testInfoDao = TestInfoDAOImpl(this)
+        usageInfoDAOImpl = UsageInfoDAOImpl(this)
+        testInfoDAOImpl = TestInfoDAOImpl(this)
+        userComplainDAOImpl = UserComplainDAOImpl(this)
+        readTAinterval = Preferences.getReadTAInterval(this)!!
+        decreaseCPUInterval = Preferences.getDecreaseCPUInterval(this)!!
+        decreaseCPUFrequency = Preferences.getDecreaseCPUFrequency(this)
+        increaseCpuAfterComplaining = Preferences.getMarginToIncreaseCpu(this)!!
+        uimpatienceLevel = Preferences.getImpatienceLevel(this)!!
         val filter = IntentFilter(Intent.ACTION_SCREEN_ON)
         filter.addAction("com.android.battery.saver.USER_COMPLAINED")
         filter.addAction(Intent.ACTION_SCREEN_OFF)
@@ -58,31 +70,10 @@ class BackgroundService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
-        var currentApp: String
-        var lastApp = ""
-        readTAinterval = 1
-        decreaseCPUInterval = 2
-        decreaseCPUFrequency = 2
-        increaseCpuAfterComplaining = 2
-        uimpatienceLevel = 0
-        clock = 0
-        var iteration = 0
         var incIteration = false
-        //        readTAinterval = Preferences.getReadTAInterval(this)!!
-//        decreaseCPUInterval = Preferences.getDecreaseCPUInterval(this)!!
-//        amountOfFrequencyToReduce = Preferences.getDecreaseCPUFrequency(this)
-//        increaseCpuAfterComplaining = FractionParser.parse(Preferences.getMarginToIncreaseCpu(this)!!)
-//        uimpatienceLevel = Preferences.getImpatienceLevel(this)!!
-
         runnable = Runnable {
             //Check if screen is on or off
             if (isScreenOn) {
-//                if (userComplained) {
-//                    CpuManager.setThreshold()
-//                    CpuManager.rampCpuUp(increaseCpuAfterComplaining)
-//                    userComplained = false
-//                    clock = 0
-//                }
                 //Get THE PACKAGE NAME of the app that is running as top-app
                 currentApp = AppManager.getTopApp()
                 if (!excludedApps.contains(currentApp)) {
@@ -102,10 +93,10 @@ class BackgroundService : Service() {
                                 iteration++
                                 incIteration = false
                             }
-                            appConfiguration = usageInfoDAO.getDataFromAppByName(currentApp)
+                            appConfiguration = usageInfoDAOImpl.getDataFromAppByName(currentApp)
                             if (appConfiguration.appName == "") {
                                 //Scale cpu to max
-//                                CpuManager.setAllCoresToMax()
+                                CpuManager.setAllCoresToMax()
                             }
                             lastApp = currentApp
                             clock = 0
@@ -117,11 +108,12 @@ class BackgroundService : Service() {
                         if (clock >= decreaseCPUInterval) {
                             Log.d(Logger.DEBUG, Calendar.getInstance().time.toString())
 //                            CpuManager.scaleCpuDown(amountOfFrequencyToReduce)
+                            CpuManager.scaleAllCpuDown(decreaseCPUFrequency)
                             val testInfoModel = TestsInfoModel(currentApp, CpuManager.getAllCoresFrequencies(),
                                     CpuManager.getAllCoresThreshold(), readTAinterval, iteration,
                                     decreaseCPUInterval, decreaseCPUFrequency,
                                     increaseCpuAfterComplaining, uimpatienceLevel)
-                            testInfoDao.insert(testInfoModel)
+                            testInfoDAOImpl.insert(testInfoModel)
                             clock = 0
                         }
                     }
@@ -148,11 +140,11 @@ class BackgroundService : Service() {
                 CpuManager.getAllCoresThreshold())
         //save appConfiguration config
         if (appConfiguration.appName == "") {
-            usageInfoDAO.insert(usageInfoModel)
+            usageInfoDAOImpl.insert(usageInfoModel)
         }
         //Update last config
         else {
-            usageInfoDAO.update(usageInfoModel)
+            usageInfoDAOImpl.update(usageInfoModel)
         }
     }
 
@@ -190,8 +182,17 @@ class BackgroundService : Service() {
             }
             if (intent.action == "com.android.battery.saver.USER_COMPLAINED") {
                 Log.d(Logger.DEBUG, "USER COMPLAINED")
-                userComplained = true
-
+                if (::currentApp.isInitialized && !createExcludedAppsSet().contains(currentApp)) {
+                    CpuManager.setThreshold()
+                    CpuManager.scaleAllCpuUp(increaseCpuAfterComplaining)
+                    clock = 0
+                    val userComplainModel = UserComplainModel(currentApp, CpuManager.getAllCoresFrequencies(),
+                            CpuManager.getAllCoresThreshold(), readTAinterval, iteration,
+                            decreaseCPUInterval, decreaseCPUFrequency,
+                            increaseCpuAfterComplaining, uimpatienceLevel)
+                    userComplainDAOImpl.insert(userComplainModel)
+                    userComplainDAOImpl.get()
+                }
             }
         }
     }

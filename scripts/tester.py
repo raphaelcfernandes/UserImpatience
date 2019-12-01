@@ -19,7 +19,7 @@ class Tester:
     decreaseCPUFrequency = ["2", "4", "8"]
     #(Max - current)/C
     # Where C is the following measurements
-    marginToIncreaseCpuFrequency = ["1/2", "1/4", "1/8"]
+    marginToIncreaseCpuFrequency = ["2", "4", "8"]
     # 0 is the user that does not complain at all
     # 5 is the user that complains with high frequency
     userImpatienceLevel = [0, 1, 2]

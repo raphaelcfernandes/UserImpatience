@@ -8,6 +8,6 @@ class Chrome {
  public:
   Chrome();
   virtual ~Chrome();
-  void chromeScript();
+  void chromeScript(std::string device);
 };
 #endif

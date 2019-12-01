@@ -5,6 +5,7 @@ package com.android.battery.saver.model
  * frequencies -> the frequency values this core can run on
  * currentFrequency -> the current frequency the core is running on
  * governor -> The governor that is controlling the core
+ * freqPos -> Store what frequency from 0 to N the core is set to
  * status -> If core is on (1) or off (0)
  * threshold -> If the user complained, this core will have the last frequency before complaining
  */

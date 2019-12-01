@@ -13,24 +13,16 @@ class AdbManager {
                         std::string increaseCpuFrequency);
 
    public:
-    // Mid button responsable to minimize all apps coordinate Nexus 6
-    std::string midButtonAndroid = "734 2540";
-    // Mid button responsable to minimize all apps coordinate Nexus 5
-    // std::string midButtonAndroid = "535 1838";
+    // Mid button responsable to minimize all apps coordinate 
+    std::string midButtonAndroid = "";
     // Main menu coordinate on Nexus 6
-    std::string mainMenuCoordinate = "745 2237";
-    // Main menu coordinate on Nexus 5
-    // std::string mainMenuCoordinate = "530 1668";
-    // Quick search app in the main menu coordinate on Nexus 6
-    std::string quickSearchAppCoordinate = "218 228";
-    // Quick search app in the main menu coordinate on Nexus 5
-    // std::string quickSearchAppCoordinate = "570 181";
-    // Coordinate after search for app on Nexus 6
-    std::string appLocationCoordinate = "236 478";
-    // Coordinate after search for app on Nexus 5
-    // std::string appLocationCoordinate = "168 420";
+    std::string mainMenuCoordinate = "";
+    // Quick search app in the main menu coordinate
+    std::string quickSearchAppCoordinate = "";
+    // Coordinate after search for app  
+    std::string appLocationCoordinate = "";
 
-    AdbManager();
+    AdbManager(std::string device);
     virtual ~AdbManager();
     void tap(std::string position, bool saveToFile);
     void swipe(std::string from, std::string to, int time, bool saveToFile);
@@ -45,7 +37,7 @@ class AdbManager {
                                         std::string increaseCpuFrequency);
     void sleep(int timeInMs);
     void keyevent(int code, bool saveToFile);
-    void closeApp();
+    void closeApp(std::string device);
     void uimpatienceClompainNotification(bool saveToFile);
 };
 #endif

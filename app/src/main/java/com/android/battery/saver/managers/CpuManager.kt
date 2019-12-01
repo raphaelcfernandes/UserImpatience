@@ -16,7 +16,7 @@ object CpuManager {
     private var totalOfFrequencies: Int = 0
 
     init {
-        initializeCpuManagerGovernor()
+        initializeUImpatience()
     }
 
     /**
@@ -31,7 +31,7 @@ object CpuManager {
             }
             startMpDecision()
         } else {
-            initializeCpuManagerGovernor()
+            initializeUImpatience()
         }
     }
 
@@ -50,10 +50,6 @@ object CpuManager {
 
     fun getFrequencyFromCore(core: Int): Int {
         return cpuCores[core]!!.currentFrequency
-    }
-
-    fun getThresholdFromCore(core: Int): Int {
-        return cpuCores[core]!!.threshold
     }
 
     fun getAllCoresFrequencies(): ArrayList<Int> {
@@ -85,7 +81,7 @@ object CpuManager {
         returnDeviceControlToAndroid()
     }
 
-    private fun initializeCpuManagerGovernor() {
+    private fun initializeUImpatience() {
         stopMpDecision()
         for (i in 0 until numberOfCores) {
             //Check if core is on/off
@@ -98,7 +94,7 @@ object CpuManager {
             //Write userspace to core
             writeGovernorToCore(i, "userspace")
             //Retrieve current frequency
-            val curFreq = getCurrentFrequencyFromInteralFile(i)
+            val curFreq = getCurrentFrequencyFromInternalFile(i)
             cpuCores[i] = CpuCoreModel(i, frequencies, curFreq, "userspace",
                     SearchAlgorithms.binarySearch(curFreq, frequencies),
                     true, 0)
@@ -108,6 +104,7 @@ object CpuManager {
 
     /**
      * Check for threshold if any. Do not need to check all cores because they WILL be set at same time
+     * return True if has threshold, False if no threshold set
      */
     private fun configHasThreshold(): Boolean {
         return cpuCores[0]!!.threshold != 0
@@ -155,6 +152,43 @@ object CpuManager {
             totalToIncrease -= toMax
             i++
         }
+    }
+
+    fun scaleAllCpuDown(amountOfFrequencyToReduce: Int): Boolean {
+        // In this case, ALL cores will have the same speed, then get the freqPos of any core
+        // Will lead to the same freqPos for ALL cores
+        val freqPos = cpuCores[0]!!.freqPos
+        if (!configHasThreshold() || (0 until 10).random() == 9) {
+            if (freqPos - amountOfFrequencyToReduce >= 0) {
+                for (i in 0 until numberOfCores) {
+                    setCoreFrequency(i, cpuCores[0]!!.frequencies[freqPos - amountOfFrequencyToReduce])
+                }
+                return true
+            } else {
+                //set all to minimum
+                for (i in 0 until numberOfCores) {
+                    setCoreFrequency(i, cpuCores[0]!!.frequencies[0])
+                }
+            }
+        }
+
+        return false
+    }
+
+    fun scaleAllCpuUp(increase: Int): Boolean {
+        val freqPos = cpuCores[0]!!.freqPos
+        if (freqPos + increase < cpuCores[0]!!.frequencies.size) {
+            for (i in 0 until numberOfCores) {
+                setCoreFrequency(i, cpuCores[0]!!.frequencies[freqPos + increase])
+            }
+            return true
+        } else {
+            //set to maximum
+            for (i in 0 until numberOfCores) {
+                setCoreFrequency(i, cpuCores[0]!!.frequencies[cpuCores[0]!!.frequencies.size - 1])
+            }
+        }
+        return false
     }
 
     /**
@@ -236,7 +270,7 @@ object CpuManager {
         return status.toBoolean()
     }
 
-    private fun getCurrentFrequencyFromInteralFile(core: Int): Int {
+    private fun getCurrentFrequencyFromInternalFile(core: Int): Int {
         val proc = Runtime.getRuntime().exec(
                 arrayOf(
                         "su", "-c",
@@ -266,10 +300,8 @@ object CpuManager {
                 )
         )
         return if (governors.contains("interactive")) {
-            Log.d(Logger.DEBUG, "Default could be interactive")
             "interactive"
         } else {
-            Log.d(Logger.DEBUG, "Default could be ondemand")
             "ondemand"
         }
     }
@@ -376,7 +408,7 @@ object CpuManager {
         if (cpuCores[core] != null) {
             cpuCores[core]?.status = false
             cpuCores[core]?.currentFrequency = 0
-            cpuCores[core]?.freqPos = 0
+            cpuCores[core]?.freqPos = -1
         }
     }
 
@@ -399,10 +431,6 @@ object CpuManager {
         } catch (e: IOException) {
             e.printStackTrace()
         }
-    }
-
-    private fun getCoreFrequency(core: Int): Int {
-        return cpuCores[core]?.currentFrequency!!
     }
 
     //TODO: find better name for this
