@@ -72,7 +72,8 @@ void AdbManager::typeWithKeyboard(std::string text, bool saveToFile) {
         }
         std::cout << "typing " << c << std::endl;
         popen(cmd.c_str(), "r");
-        Generic::getInstance()->sleep(700);
+        Generic::getInstance()->sleep(1200);
+        // responseTime.calculateResponseTime();
     }
 }
 
@@ -102,39 +103,70 @@ void AdbManager::setGovernorInUserImpatienceApp(
     std::string governor, std::string timeToReadTA = NULL,
     std::string decreaseCpuInterval = NULL,
     std::string decreaseCpuFrequency = NULL,
-    std::string increaseCpuFrequency = NULL) {
+    std::string increaseCpuFrequency = NULL, std::string device = NULL) {
     keyevent(3, false);
     tap(mainMenuCoordinate, false);
     tap(quickSearchAppCoordinate, false);
     typeWithKeyboard("battery", false);
     tap(appLocationCoordinate, false);
-    // Deactivate button
-    tap("1045 570", false);
-    // Config tab
-    tap("1222 345", false);
-    // Dropdown menu
-    tap("423 528", false);
-    if (governor.compare("conservative") == 0) {
-        tap("271 755", false);
-    } else if (governor.compare("powersave") == 0) {
-        tap("186 1249", false);
-    } else if (governor.compare("interactive") == 0) {
-        tap("134 913", false);
-    } else if (governor.compare("performance") == 0) {
-        tap("147 1417", false);
-    } else if (governor.compare("ondemand") == 0) {
-        tap("203 1090", false);
-    } else {  // userspace
-        tap("185 1605", false);
-        setUImpatience(timeToReadTA, decreaseCpuInterval, decreaseCpuFrequency,
-                       increaseCpuFrequency);
+    if (device == "Nexus 5") {
+        // Deactivate button
+        tap("826 490", false);
+        // Config tab
+        tap("949 333", false);
+        // Dropdown menu
+        tap("376 442", false);
+        if (governor.compare("conservative") == 0) {
+            tap("211 629", false);
+        } else if (governor.compare("powersave") == 0) {
+            tap("173 1054", false);
+        } else if (governor.compare("interactive") == 0) {
+            tap("225 776", false);
+        } else if (governor.compare("performance") == 0) {
+            tap("243 1208", false);
+        } else if (governor.compare("ondemand") == 0) {
+            tap("186 929", false);
+        } else {  // userspace
+            tap("185 1605", false);
+            setUImpatience(timeToReadTA, decreaseCpuInterval,
+                           decreaseCpuFrequency, increaseCpuFrequency);
+        }
+        // Save button
+        tap("128 556", false);
+        // Main menu
+        tap("127 298", false);
+        // Activate
+        tap("363 478", false);
     }
-    // Save button
-    tap("140 652", false);
-    // Main menu
-    tap("124 362", false);
-    // Activate
-    tap("479 602", false);
+    if (device == "Nexus 6") {
+        // Deactivate button
+        tap("1045 570", false);
+        // Config tab
+        tap("1222 345", false);
+        // Dropdown menu
+        tap("423 528", false);
+        if (governor.compare("conservative") == 0) {
+            tap("271 755", false);
+        } else if (governor.compare("powersave") == 0) {
+            tap("186 1249", false);
+        } else if (governor.compare("interactive") == 0) {
+            tap("134 913", false);
+        } else if (governor.compare("performance") == 0) {
+            tap("147 1417", false);
+        } else if (governor.compare("ondemand") == 0) {
+            tap("203 1090", false);
+        } else {  // userspace
+            tap("185 1605", false);
+            setUImpatience(timeToReadTA, decreaseCpuInterval,
+                           decreaseCpuFrequency, increaseCpuFrequency);
+        }
+        // Save button
+        tap("140 652", false);
+        // Main menu
+        tap("124 362", false);
+        // Activate
+        tap("479 602", false);
+    }
     Generic::getInstance()->sleep(4000);
 }
 

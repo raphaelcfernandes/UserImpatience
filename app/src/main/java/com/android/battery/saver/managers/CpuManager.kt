@@ -23,9 +23,10 @@ object CpuManager {
      * Set the governor to what the user selected
      */
     fun setGovernorFromSpinner(governor: String) {
+        stopMpDecision()
         if (governor != "UImpatience") {
             for (i in 0 until numberOfCores) {
-                if (!cpuCores[i]!!.status)
+                if (!checkIfCoreIsOnFromInternalFile(i))
                     turnCoreOn(i)
                 writeGovernorToCore(i, governor)
             }
@@ -267,7 +268,8 @@ object CpuManager {
                         )
                 )
         ).replace("\n".toRegex(), "")
-        return status.toBoolean()
+        //Core is on? Then status == 1
+        return status == "1"
     }
 
     private fun getCurrentFrequencyFromInternalFile(core: Int): Int {

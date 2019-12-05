@@ -6,6 +6,7 @@ Youtube::~Youtube(){};
 void Youtube::youtubeScript(std::string device) {
     AdbManager adb(device);
     if(device == "Nexus 5") {
+        adb.tap("978 1685",true);
         // Search Button
         adb.tap("846 146", true);
         adb.typeWithKeyboard("ozzy osbourne dee", true);

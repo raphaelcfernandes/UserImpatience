@@ -3,14 +3,17 @@ from multiprocessing import Process, Queue
 from uimpatienceThread import MyThread
 import time
 import os
+import subprocess
+from subprocess import check_output, CalledProcessError
 
 
 class Tester:
     governor = ['powersave']
-    apps = ["chrome", "spotify", "youtube", "gmail"]
+    apps = ['photos']
     # Read interval that userspace background thread will read TA from top in s
     # Values in s
     timeToReadTA = ["1", "2"]
+    device = "Nexus 5"
     # Time to decrease cpu frequency in s
     # this is the parameter A
     # Values in s
@@ -23,14 +26,14 @@ class Tester:
     # 0 is the user that does not complain at all
     # 5 is the user that complains with high frequency
     userImpatienceLevel = [0, 1, 2]
-    # dataQ = DataQProcess()
-    # queue = Queue()
+    dataQ = DataQProcess()
+    queue = Queue()
 
     def __init__(self):
         self.setGovernor = True
         self.runApp = True
-        # self.p = Process(target=self.dataQ.spawnProcess, args=(self.queue,))
-        # self.p.start()
+        self.p = Process(target=self.dataQ.spawnProcess, args=(self.queue,))
+        self.p.start()
 
     def testUImpatience(self):
         if not os.path.exists("results/uimpatience"):
@@ -61,25 +64,42 @@ class Tester:
             # Create a folder for each governor
             if not os.path.exists("adbTouchEvents"):
                 os.mkdir("adbTouchEvents")
+            if not os.path.exists("adbTouchEvents/{}".format(self.device)):
+                os.mkdir("adbTouchEvents/{}".format(self.device))
+            if not os.path.exists("results"):
+                os.mkdir("results")
+            if not os.path.exists("results/{}".format(self.device)):
+                os.mkdir("results/{}".format(self.device))
             for gov in self.governor:
-                if not os.path.exists("results/{}".format(gov)):
-                    os.mkdir("results/{}".format(gov))
-                if not os.path.exists("adbTouchEvents/{}".format(gov)):
-                    os.mkdir("adbTouchEvents/{}".format(gov))
+                if not os.path.exists("results/{}/{}".format(self.device, gov)):
+                    os.mkdir("results/{}/{}".format(self.device, gov))
+                if not os.path.exists("adbTouchEvents/{}/{}".format(self.device, gov)):
+                    os.mkdir("adbTouchEvents/{}/{}".format(self.device, gov))
                 # Tell the c++ code to set the governor before executing the array of apps
-                if self.setGovernor:
+                # if self.setGovernor:
                     # Wait the c++ code to set the governor and then start executing apps
-                    if os.system("./cpu set {}".format(gov)) == 0:
-                        self.runApp = True
-                        self.setGovernor = False
+                # if os.system("./cpu set {}".format(gov)) == 0:
+                self.runApp = True
+                self.setGovernor = False
                 if self.runApp:
                     for app in self.apps:
                         # Create folder for each app inside each governor
-                        if not os.path.exists("results/{}/{}".format(gov, app)):
-                            os.mkdir("results/{}/{}".format(gov, app))
-                        if not os.path.exists("adbTouchEvents/{}/{}".format(gov, app)):
-                            os.mkdir("adbTouchEvents/{}/{}".format(gov, app))
-                        for i in range(0, 30):
+                        if not os.path.exists("results/{}/{}/{}".format(self.device, gov, app)):
+                            os.mkdir(
+                                "results/{}/{}/{}".format(self.device, gov, app))
+                        if not os.path.exists("adbTouchEvents/{}/{}/{}".format(self.device, gov, app)):
+                            os.mkdir(
+                                "adbTouchEvents/{}/{}/{}".format(self.device, gov, app))
+                        for i in range(12, 30):
+                            res = str(check_output(
+                                "adb shell dumpsys battery", shell=True).decode('utf-8'))
+                            res = int(res.replace("\r\n", ",").strip().split(
+                                ",")[8].split(":")[1].strip())
+                            if res < 100:
+                                errorF = open("error_file.txt", "a+")
+                                errorF.write(
+                                    f"BATERIA ABAIXO DE 100. {gov},{app},{i}\n")
+                                errorF.close()
                             print("running {} {} iteration: {}".format(gov, app, i))
                             # Save file to its respective governor and app
                             self.executeTest(app, gov, i)
@@ -95,7 +115,7 @@ class Tester:
     def executeTest(self, app, gov, iteration):
         mythread = MyThread("run", app, gov, iteration)
         if os.system("./cpu search {}".format(app)) == 0:
-            self.queue.put(f"RUN:{app}:{gov}:{iteration}")
+            self.queue.put(f"RUN:{app}:{gov}:{iteration}:{self.device}")
             mythread.setName("C++ execution")
             mythread.start()
         while mythread.is_alive():

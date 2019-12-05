@@ -39,9 +39,9 @@ std::string Generic::GetStdoutFromCommand(std::string cmd) {
 }
 
 void Generic::createFile(std::string governor, std::string app,
-                         std::string iteration) {
+                         std::string iteration, std::string device) {
   std::string p =
-      "adbTouchEvents/" + governor + '/' + app + "/" + iteration + ".txt";
+      "adbTouchEvents/" + device + '/' + governor + '/' + app + "/" + iteration + ".txt";
   std::cout << p << std::endl;
   this->file.open(p);
 }

@@ -156,7 +156,9 @@ class DataQProcess:
                     gov = parser[2]
                     # Retrieve iteration from request
                     iteration = parser[3]
-                    f = open(f"results/{gov}/{app}/{iteration}.txt", "w+")
+                    # Retrieve the device we are using for test
+                    device = parser[4]
+                    f = open(f"results/{device}/{gov}/{app}/{iteration}.txt", "w+")
                     f.write('amperes,timestamp\n')
                 if self.command == "STOP":
                     acquiring = False

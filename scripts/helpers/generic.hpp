@@ -17,7 +17,7 @@ class Generic {
   static Generic* getInstance();
   std::time_t getCurrentTimestamp();
   std::string GetStdoutFromCommand(std::string cmd);
-  void createFile(std::string governor, std::string app, std::string iteration);
+  void createFile(std::string governor, std::string app, std::string iteration,std::string device);
   void writeToFile(std::string event);
   void sleep(int timeInMs);
 };

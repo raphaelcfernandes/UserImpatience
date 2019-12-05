@@ -23,6 +23,7 @@ void Gmail::gmailScript(std::string device) {
         // Click to write subject
         adb.tap("260 661", true);
         // Subject
+        adb.tap("455 717", true);
         adb.typeWithKeyboard("This is a test message from UImpatience",true);
         // Email text
         adb.tap("164 857", true);

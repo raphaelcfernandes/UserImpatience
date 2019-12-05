@@ -2,6 +2,7 @@
 #include <string>
 #include "appScripts/chrome.hpp"
 #include "appScripts/gmail.hpp"
+#include "appScripts/photos.hpp"
 #include "appScripts/spotify.hpp"
 #include "appScripts/youtube.hpp"
 #include "helpers/generic.hpp"
@@ -35,8 +36,8 @@ int main(int argc, char *argv[]) {
         // Governor, timeToreadTA, decreaseCpuInterval,
         // decreaseCpuFrequency,margintoIncrease
         adb.setGovernorInUserImpatienceApp(
-            governor, timeToReadTA, decreaseCpuInterval,
-            decreaseCpuFrequency, marginToIncreaseCpu);
+            governor, timeToReadTA, decreaseCpuInterval, decreaseCpuFrequency,
+            marginToIncreaseCpu, device);
     } else {
         app = argv[2];
         if (cmd == "search") {
@@ -48,7 +49,8 @@ int main(int argc, char *argv[]) {
         if (cmd == "run") {
             governor = argv[3];
             iteration = argv[4];
-            Generic::getInstance()->createFile(governor, app, iteration);
+            Generic::getInstance()->createFile(governor, app, iteration,
+                                               device);
             std::cout << "C++/ADB going to run " << app << endl;
             adb.tap(adb.appLocationCoordinate, false);
             if (app == "gmail") {
@@ -63,6 +65,9 @@ int main(int argc, char *argv[]) {
             } else if (app == "youtube") {
                 Youtube youtube;
                 youtube.youtubeScript(device);
+            } else if (app == "photos") {
+                Photos photos;
+                photos.photosScript(device);
             }
             Generic::getInstance()->file.close();
         }
