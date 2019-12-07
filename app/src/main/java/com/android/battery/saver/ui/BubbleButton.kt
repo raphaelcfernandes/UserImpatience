@@ -31,15 +31,15 @@ object BubbleButton {
             WindowManager.LayoutParams.TYPE_APPLICATION
         }
         val params = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            LAYOUT_FLAG,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-            PixelFormat.TRANSLUCENT
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                LAYOUT_FLAG,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                PixelFormat.TRANSLUCENT
         )
         params.gravity = Gravity.TOP or Gravity.START
-        params.x = 700
-        params.y = 300
+        params.x = 1006
+        params.y = 606
         windowManager.addView(floatingButton, params)
         floatingButton.setOnTouchListener(object : View.OnTouchListener {
             private val MAX_CLICK_DURATION = 100
@@ -60,10 +60,10 @@ object BubbleButton {
                         startClickTime = Calendar.getInstance().timeInMillis
                     }
                     MotionEvent.ACTION_UP -> if (Calendar.getInstance().timeInMillis - startClickTime < MAX_CLICK_DURATION) {
-                        val i = Intent(context, FeedBackPopUpWindow::class.java)
-                        i.action = CUSTOM_INTENT
-                        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-//                        context.startActivity(i)
+                        Intent().also { intent ->
+                            intent.setAction("com.android.battery.saver.USER_COMPLAINED")
+//                            sendBroadcast(intent)
+                        }
                     }
                     MotionEvent.ACTION_MOVE -> {
                         params.x = initialX + (event.rawX - initialTouchX).toInt()
@@ -75,6 +75,7 @@ object BubbleButton {
             }
         })
     }
+
     fun removeView() {
         try {
             windowManager.removeView(floatingButton)

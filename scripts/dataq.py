@@ -127,7 +127,7 @@ class DataQ:
 class DataQProcess:
     def __init__(self):
         self.command = "WAIT"
-        self.decimation_factor = 250
+        self.decimation_factor = 150
         self.dataQ = DataQ()
 
     def spawnProcess(self, queue):
@@ -174,12 +174,12 @@ class DataQProcess:
                         bytes, byteorder='little', signed=True)
                     result = result >> 2
                     result = result << 2
-                    result = (10*(result/32768))/11
+                    result = (10*(result/32768))
                     acum += result
                     cont += 1
                     if(cont == self.decimation_factor):
                         f.write("{},{}\n".format(
-                            acum/self.decimation_factor, time.time()))
+                            (acum/self.decimation_factor)/.05, time.time()))
                         cont = 0
                         acum = 0
             elif self.command != "RUN":

@@ -2,6 +2,7 @@ package com.android.battery.saver.ui.tabs
 
 import android.content.Intent
 import android.os.Bundle
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,6 +13,7 @@ import com.android.battery.saver.R
 import com.android.battery.saver.helper.Preferences
 import com.android.battery.saver.managers.CpuManager
 import com.android.battery.saver.services.BackgroundService
+import com.android.battery.saver.ui.BubbleButton
 import com.google.android.material.snackbar.Snackbar
 
 class MainFragment : Fragment() {
@@ -28,7 +30,6 @@ class MainFragment : Fragment() {
             activate.isEnabled = false
             deactivate.isEnabled = true
         }
-
         activate.setOnClickListener {
             if (Preferences.getGovernor(context!!) == null) {
                 Snackbar.make(view, R.string.noGovernorSelected, Snackbar.LENGTH_LONG).show()

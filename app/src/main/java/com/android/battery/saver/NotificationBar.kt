@@ -8,7 +8,7 @@ import androidx.core.app.NotificationCompat
 
 class NotificationBar {
     private val speedUpIntent = Intent("com.android.battery.saver.USER_COMPLAINED")
-
+    private val SPEEDUPNOTIFICATION_ID = 1 //Identifier for this specific notification
     //This method creates the notification when the app is started
     fun createSpeedUpNotification(context: Context) {
         //Notification sends this on press
@@ -41,7 +41,4 @@ class NotificationBar {
 
     }
 
-    companion object {
-        private val SPEEDUPNOTIFICATION_ID = 1 //Identifier for this specific notification
-    }
 }

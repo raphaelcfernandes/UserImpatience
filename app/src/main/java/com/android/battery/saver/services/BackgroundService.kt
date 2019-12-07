@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.IBinder
 import android.util.Log
+import com.android.battery.saver.activities.MainActivity
 import com.android.battery.saver.dao.TestInfoDAOImpl
 import com.android.battery.saver.dao.UsageInfoDAOImpl
 import com.android.battery.saver.dao.UserComplainDAOImpl
@@ -17,6 +18,7 @@ import com.android.battery.saver.managers.CpuManager
 import com.android.battery.saver.model.TestsInfoModel
 import com.android.battery.saver.model.UsageInfoModel
 import com.android.battery.saver.model.UserComplainModel
+import com.android.battery.saver.ui.BubbleButton
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit.SECONDS
@@ -71,53 +73,13 @@ class BackgroundService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
         var incIteration = false
+        CpuManager.setAllCoresToMax()
         runnable = Runnable {
             //Check if screen is on or off
             if (isScreenOn) {
                 //Get THE PACKAGE NAME of the app that is running as top-app
-                currentApp = AppManager.getTopApp()
-                if (!excludedApps.contains(currentApp)) {
-                    //The user could be using the same app for many seconds/minutes
-                    // needsToReload tells the governor to reload the frequency if the screen turns off
-//                    if (lastApp != currentApp || needsToReload) { <- correct way after finishing tests
-                    // FOR TESTING PURPOSES. THIS LINE VERIFIES IF THE TEST THAT WAS RUNNING HAS FINISHED
-                    // 30/11/2019
-                    if (lastApp != currentApp) {
-                        // using this line to execute tests to collect data/results
-                        if (currentApp == "com.google.android.googlequicksearchbox" || currentApp == "com.google.android.googlequicksearchbox:search") {
-                            incIteration = true
-                        } else {
-//                            needsToReload = false
-                            if (incIteration) {
-                                Log.d(Logger.DEBUG, iteration.toString())
-                                iteration++
-                                incIteration = false
-                            }
-                            appConfiguration = usageInfoDAOImpl.getDataFromAppByName(currentApp)
-                            if (appConfiguration.appName == "") {
-                                //Scale cpu to max
-                                CpuManager.setAllCoresToMax()
-                            }
-                            lastApp = currentApp
-                            clock = 0
-                        }
-                    } else {
-                        clock += readTAinterval
-                        // decrease cpu and save to db:
-                        // cpu freqs, iteration, timestamp, app, readTa, decreaseCpuInterval, decreaseCpuFreq, IncreaseCpuFreq, uimpatiencelevel
-                        if (clock >= decreaseCPUInterval) {
-                            Log.d(Logger.DEBUG, Calendar.getInstance().time.toString())
-//                            CpuManager.scaleCpuDown(amountOfFrequencyToReduce)
-                            CpuManager.scaleAllCpuDown(decreaseCPUFrequency)
-                            val testInfoModel = TestsInfoModel(currentApp, CpuManager.getAllCoresFrequencies(),
-                                    CpuManager.getAllCoresThreshold(), readTAinterval, iteration,
-                                    decreaseCPUInterval, decreaseCPUFrequency,
-                                    increaseCpuAfterComplaining, uimpatienceLevel)
-                            testInfoDAOImpl.insert(testInfoModel)
-                            clock = 0
-                        }
-                    }
-                }
+                currentApp = AppManager.getAppInForeground(this)
+
             }
         }
 

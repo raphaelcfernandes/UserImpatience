@@ -36,10 +36,10 @@ object AppManager {
     private fun getArrayOfUsageStats(context: Context): ArrayList<UsageStats> {
         val usm: UsageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         val calendar = Calendar.getInstance()
-        val startTime = calendar.timeInMillis
-        calendar.add(Calendar.MINUTE, -1)
         val endTime = calendar.timeInMillis
+        calendar.add(Calendar.MINUTE, -1)
+        val startTime = calendar.timeInMillis
 
-        return usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, endTime, startTime) as ArrayList<UsageStats>
+        return usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, startTime, endTime) as ArrayList<UsageStats>
     }
 }

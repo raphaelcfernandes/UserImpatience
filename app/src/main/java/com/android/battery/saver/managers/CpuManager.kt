@@ -6,6 +6,7 @@ import com.android.battery.saver.helper.ReadWriteFile
 import com.android.battery.saver.logger.Logger
 import com.android.battery.saver.model.CpuCoreModel
 import java.io.IOException
+import java.lang.Exception
 import kotlin.math.ceil
 import kotlin.random.Random
 
@@ -15,10 +16,11 @@ object CpuManager {
     private val cpuCores = HashMap<Int, CpuCoreModel>()
     private var totalOfFrequencies: Int = 0
 
-    init {
-        initializeUImpatience()
-    }
-
+//    init {
+//        initializeUImpatience()
+//    }
+//    /sys/module/cpu_boost/parameters/sync_threshold
+//    /sys/module/cpu_boost/parameters/load_based_syncs
     /**
      * Set the governor to what the user selected
      */
@@ -33,6 +35,7 @@ object CpuManager {
             startMpDecision()
         } else {
             initializeUImpatience()
+
         }
     }
 
@@ -94,12 +97,57 @@ object CpuManager {
             val frequencies = getCoreAvailableFrequencies(i)
             //Write userspace to core
             writeGovernorToCore(i, "userspace")
+            //Write max freq possible
+            writeMaxFreqToCore(i, frequencies[frequencies.size - 1])
+            //Write min freq possible
+            writeMinFreqToCore(i, frequencies[0])
             //Retrieve current frequency
             val curFreq = getCurrentFrequencyFromInternalFile(i)
             cpuCores[i] = CpuCoreModel(i, frequencies, curFreq, "userspace",
                     SearchAlgorithms.binarySearch(curFreq, frequencies),
                     true, 0)
             totalOfFrequencies += frequencies.size
+        }
+    }
+
+
+    private fun writeMaxFreqToCore(core: Int, freq: Int) {
+        val path = "echo $freq > $pathToCpu$core/cpufreq/scaling_max_freq"
+        try {
+            Log.d(Logger.DEBUG, "Writing max freq to core $core")
+            val proc = Runtime.getRuntime().exec(arrayOf("su", "-c", path))
+            proc.waitFor()
+        } catch (e: InterruptedException) {
+            e.printStackTrace()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+
+    }
+
+    private fun writeMinFreqToCore(core: Int, freq: Int) {
+        val path = "echo $freq > $pathToCpu$core/cpufreq/scaling_min_freq"
+        try {
+            Log.d(Logger.DEBUG, "Writing min freq to core $core")
+            val proc = Runtime.getRuntime().exec(arrayOf("su", "-c", path))
+            proc.waitFor()
+        } catch (e: InterruptedException) {
+            e.printStackTrace()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        val proc = Runtime.getRuntime().exec(
+                arrayOf(
+                        "su", "-c",
+                        "cat /sys/devices/system/cpu/cpu$core/cpufreq/scaling_min_freq"
+                )
+        )
+
+        if(ReadWriteFile.returnStringFromProcess(proc)
+                .replace("\n".toRegex(), "")
+                .toInt() != freq){
+            throw Exception("Min internal file != from uimpatience")
         }
     }
 
