@@ -72,7 +72,7 @@ void AdbManager::typeWithKeyboard(std::string text, bool saveToFile) {
         }
         std::cout << "typing " << c << std::endl;
         popen(cmd.c_str(), "r");
-        Generic::getInstance()->sleep(1200);
+        Generic::getInstance()->sleep(600);
         // responseTime.calculateResponseTime();
     }
 }

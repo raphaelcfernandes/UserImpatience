@@ -39,7 +39,9 @@ gasto do cat (interactive):
 
 gasto do cat (powersave):
 100ms: 18% em media
-while true; do cat cpu*/cpufreq/scaling_cur_freq; cat cpu*/cpufreq/scaling_governor; echo '\n'; sleep .1; done
+while true; do cat cpu*/cpufreq/scaling_cur_freq; echo "\n"; cat cpu*/cpufreq/scaling_max_freq; cat cpu*/cpufreq/scaling_governor;cat cpu0/cpufreq/scaling_available_frequencies; echo '\n'; sleep .1; done
+echo 0 > cpu1/online;echo 0 > cpu2/online;echo 0 > cpu3/online;
+echo 1 > cpu1/online;echo 1 > cpu2/online;echo 1 > cpu3/online;
 
 
 

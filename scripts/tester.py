@@ -8,12 +8,12 @@ from subprocess import check_output, CalledProcessError
 
 
 class Tester:
-    governor = ['powersave']
+    governor = ['interactive']
     apps = ['photos']
     # Read interval that userspace background thread will read TA from top in s
     # Values in s
     timeToReadTA = ["1", "2"]
-    device = "Nexus 5"
+    device = "Nexus 6"
     # Time to decrease cpu frequency in s
     # this is the parameter A
     # Values in s
@@ -77,8 +77,8 @@ class Tester:
                     os.mkdir("adbTouchEvents/{}/{}".format(self.device, gov))
                 # Tell the c++ code to set the governor before executing the array of apps
                 # if self.setGovernor:
-                    # Wait the c++ code to set the governor and then start executing apps
-                # if os.system("./cpu set {}".format(gov)) == 0:
+                #     # Wait the c++ code to set the governor and then start executing apps
+                #     if os.system("./cpu set {}".format(gov)) == 0:
                 self.runApp = True
                 self.setGovernor = False
                 if self.runApp:
@@ -90,11 +90,13 @@ class Tester:
                         if not os.path.exists("adbTouchEvents/{}/{}/{}".format(self.device, gov, app)):
                             os.mkdir(
                                 "adbTouchEvents/{}/{}/{}".format(self.device, gov, app))
-                        for i in range(12, 30):
+                        for i in range(0, 1):
                             res = str(check_output(
                                 "adb shell dumpsys battery", shell=True).decode('utf-8'))
-                            res = int(res.replace("\r\n", ",").strip().split(
-                                ",")[8].split(":")[1].strip())
+                            if self.device == "Nexus 6":
+                                res = int(res.replace("\n", ",").strip().split(",")[10].split(":")[1].strip())
+                            elif self.device == "Nexus 5":
+                                res = int(res.replace("\r\n", ",").strip().split(",")[8].split(":")[1].strip())
                             if res < 100:
                                 errorF = open("error_file.txt", "a+")
                                 errorF.write(

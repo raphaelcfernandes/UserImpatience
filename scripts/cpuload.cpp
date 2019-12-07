@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
     string governor = "";
     string app = "";
     string iteration = "";
-    string device = "Nexus 5";
+    string device = "Nexus 6";
     AdbManager adb(device);
     if (cmd == "set") {
         // We are setting Uimpatience
