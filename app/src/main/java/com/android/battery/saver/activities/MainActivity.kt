@@ -13,11 +13,15 @@ import com.android.battery.saver.ui.PageHolderAdapter
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
+    companion object {
+        lateinit var appContext: Context
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+        appContext = applicationContext
         val adapter = PageHolderAdapter(applicationContext, supportFragmentManager)
         pager.adapter = adapter
         tab_layout.setupWithViewPager(pager)

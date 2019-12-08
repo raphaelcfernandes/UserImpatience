@@ -10,7 +10,9 @@ class AdbManager {
     void setUImpatience(std::string timeToReadTA,
                         std::string decreaseCpuInterval,
                         std::string decreaseCpuFrequency,
-                        std::string increaseCpuFrequency);
+                        std::string increaseCpuFrequency,
+                        std::string userImpatienceLevel,
+                        std::string device);
 
    public:
     // Mid button responsable to minimize all apps coordinate 
@@ -35,6 +37,7 @@ class AdbManager {
                                         std::string decreaseCpuInterval,
                                         std::string decreaseCpuFrequency,
                                         std::string increaseCpuFrequency,
+                                        std::string userImpatienceLevel,
                                         std::string device);
     void sleep(int timeInMs);
     void keyevent(int code, bool saveToFile);

@@ -7,29 +7,24 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.IBinder
 import android.util.Log
-import com.android.battery.saver.activities.MainActivity
-import com.android.battery.saver.dao.TestInfoDAOImpl
 import com.android.battery.saver.dao.UsageInfoDAOImpl
-import com.android.battery.saver.dao.UserComplainDAOImpl
+import com.android.battery.saver.event.OnCpuScaleAllDownEvent
+import com.android.battery.saver.event.OnCpuScaleAllUpEvent
+import com.android.battery.saver.event.OnSetAllCoreToMaxEvent
 import com.android.battery.saver.helper.Preferences
 import com.android.battery.saver.logger.Logger
 import com.android.battery.saver.managers.AppManager
 import com.android.battery.saver.managers.CpuManager
-import com.android.battery.saver.model.TestsInfoModel
 import com.android.battery.saver.model.UsageInfoModel
-import com.android.battery.saver.model.UserComplainModel
-import com.android.battery.saver.ui.BubbleButton
+import org.greenrobot.eventbus.EventBus
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit.SECONDS
-
 
 class BackgroundService : Service() {
     //Objects
     private val scheduler = Executors.newSingleThreadScheduledExecutor()
     private lateinit var usageInfoDAOImpl: UsageInfoDAOImpl
-    private lateinit var testInfoDAOImpl: TestInfoDAOImpl
-    private lateinit var userComplainDAOImpl: UserComplainDAOImpl
     private lateinit var runnable: Runnable
 
     //Variable
@@ -53,8 +48,6 @@ class BackgroundService : Service() {
     override fun onCreate() {
         super.onCreate()
         usageInfoDAOImpl = UsageInfoDAOImpl(this)
-        testInfoDAOImpl = TestInfoDAOImpl(this)
-        userComplainDAOImpl = UserComplainDAOImpl(this)
         readTAinterval = Preferences.getReadTAInterval(this)!!
         decreaseCPUInterval = Preferences.getDecreaseCPUInterval(this)!!
         decreaseCPUFrequency = Preferences.getDecreaseCPUFrequency(this)
@@ -73,17 +66,46 @@ class BackgroundService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
         var incIteration = false
-        CpuManager.setAllCoresToMax()
         runnable = Runnable {
             //Check if screen is on or off
             if (isScreenOn) {
                 //Get THE PACKAGE NAME of the app that is running as top-app
-                currentApp = AppManager.getAppInForeground(this)
-
+                currentApp = AppManager.getTopApp()
+                if (!excludedApps.contains(currentApp)) {
+                    //The user could be using the same app for many seconds/minutes
+                    // needsToReload tells the governor to reload the frequency if the screen turns off
+                    // FOR TESTING PURPOSES. THIS LINE VERIFIES IF THE TEST THAT WAS RUNNING HAS FINISHED
+                    // 30/11/2019
+                    if (lastApp != currentApp) {
+                        // using this line to execute tests to collect data/results
+                        if (currentApp == "com.google.android.googlequicksearchbox" || currentApp == "com.google.android.googlequicksearchbox:search") {
+                            incIteration = true
+                        } else {
+                            if (incIteration) {
+                                Log.d(Logger.DEBUG, iteration.toString())
+                                iteration++
+                                incIteration = false
+                            }
+                            EventBus.getDefault().post(OnSetAllCoreToMaxEvent())
+                            clock = 0
+                        }
+                        lastApp = currentApp
+                    } else if (lastApp == currentApp && (currentApp != "com.google.android.googlequicksearchbox" && currentApp != "com.google.android.googlequicksearchbox:search")) {
+                        clock += readTAinterval
+                        // decrease cpu and save to db:
+                        // cpu freqs, iteration, timestamp, app, readTa, decreaseCpuInterval, decreaseCpuFreq, IncreaseCpuFreq, uimpatiencelevel
+                        if (clock >= decreaseCPUInterval) {
+//                            EventBus.getDefault().post(OnCpuScaleAllDownEvent(currentApp, readTAinterval,
+//                                    iteration - 1, decreaseCPUInterval, decreaseCPUFrequency,
+//                                    increaseCpuAfterComplaining, uimpatienceLevel))
+                            clock = 0
+                        }
+                    }
+                }
             }
         }
 
-        scheduler.scheduleAtFixedRate(runnable, 1, readTAinterval.toLong(), SECONDS)
+        scheduler.scheduleAtFixedRate(runnable, 0, readTAinterval.toLong(), SECONDS)
         return START_NOT_STICKY
     }
 
@@ -136,31 +158,20 @@ class BackgroundService : Service() {
         override fun onReceive(context: Context, intent: Intent) {
             if (intent.action == Intent.ACTION_SCREEN_OFF) {
                 isScreenOn = false
-                Log.d(Logger.DEBUG, "SCREEN OFF")
             }
             if (intent.action == Intent.ACTION_SCREEN_ON) {
                 isScreenOn = true
-                Log.d(Logger.DEBUG, "SCREEN ON")
             }
             if (intent.action == "com.android.battery.saver.USER_COMPLAINED") {
-                Log.d(Logger.DEBUG, "USER COMPLAINED")
-                if (::currentApp.isInitialized && !createExcludedAppsSet().contains(currentApp)) {
-                    CpuManager.setThreshold()
-                    CpuManager.scaleAllCpuUp(increaseCpuAfterComplaining)
-                    clock = 0
-                    val userComplainModel = UserComplainModel(currentApp, CpuManager.getAllCoresFrequencies(),
-                            CpuManager.getAllCoresThreshold(), readTAinterval, iteration,
-                            decreaseCPUInterval, decreaseCPUFrequency,
-                            increaseCpuAfterComplaining, uimpatienceLevel)
-                    userComplainDAOImpl.insert(userComplainModel)
-                    userComplainDAOImpl.get()
-                }
+                EventBus.getDefault().post(OnCpuScaleAllUpEvent(increaseCpuAfterComplaining, currentApp,
+                        readTAinterval, iteration - 1, decreaseCPUInterval, decreaseCPUFrequency,
+                        increaseCpuAfterComplaining, uimpatienceLevel))
+                clock = 0
             }
         }
     }
 
     override fun onDestroy() {
-        println("ondeStroy ")
         unregisterReceiver(broadcastRcv)
         scheduler.shutdown()
         CpuManager.stop()

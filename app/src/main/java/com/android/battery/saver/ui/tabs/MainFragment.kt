@@ -37,10 +37,9 @@ class MainFragment : Fragment() {
                 activate.isEnabled = false
                 deactivate.isEnabled = true
                 val governor = Preferences.getGovernor(context!!)
-//                val governor = "UImpatience"
                 CpuManager.setGovernorFromSpinner(governor!!)
 
-                if (Preferences.getGovernor(context!!) == "UImpatience") {
+                if (Preferences.getGovernor(context!!) == "userspace") {
                     Preferences.setBackgroundServiceStatus(context!!, true)
                     activity?.startService(Intent(activity, BackgroundService::class.java))
                     n.createSpeedUpNotification(context!!)
@@ -49,7 +48,7 @@ class MainFragment : Fragment() {
         }
 
         deactivate.setOnClickListener {
-            if (Preferences.getGovernor(context!!) == "UImpatience") {
+            if (Preferences.getGovernor(context!!) == "userspace") {
                 activity?.stopService(Intent(activity, BackgroundService::class.java))
                 n.removeNotification(context!!)
             }

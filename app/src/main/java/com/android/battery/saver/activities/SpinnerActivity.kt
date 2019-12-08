@@ -18,7 +18,7 @@ class SpinnerActivity(view: View, context: Context) : AdapterView.OnItemSelected
         val frequency = mView.increaseFrequency
         val reduceFrequencyAmount = mView.reduceFrequency
         val impatienceLevel = mView.impatienceLevel
-        if (parent?.getItemAtPosition(pos).toString() == "UImpatience") {
+        if (parent?.getItemAtPosition(pos).toString() == "userspace") {
             readTA.visibility = View.VISIBLE
             timeWindow.visibility = View.VISIBLE
             frequency.visibility = View.VISIBLE

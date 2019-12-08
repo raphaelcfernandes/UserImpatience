@@ -39,7 +39,7 @@ gasto do cat (interactive):
 
 gasto do cat (powersave):
 100ms: 18% em media
-while true; do cat cpu*/cpufreq/scaling_cur_freq; echo "\n"; cat cpu*/cpufreq/scaling_max_freq; cat cpu*/cpufreq/scaling_governor;cat cpu0/cpufreq/scaling_available_frequencies; echo '\n'; sleep .1; done
+while true; do echo "-----------------------------------------------"; echo "INPUT_BOOST_FREQ"; cat /sys/module/cpu_boost/parameters/input_boost_freq; echo "\nCURFREQ"; cat cpu*/cpufreq/scaling_cur_freq; echo "\nMAXFREQ"; cat cpu*/cpufreq/scaling_max_freq; echo "\nMINFREQ"; cat cpu*/cpufreq/scaling_min_freq; cat cpu*/cpufreq/scaling_governor;cat cpu0/cpufreq/scaling_available_frequencies; echo '\n'; sleep .5; done
 echo 0 > cpu1/online;echo 0 > cpu2/online;echo 0 > cpu3/online;
 echo 1 > cpu1/online;echo 1 > cpu2/online;echo 1 > cpu3/online;
 
@@ -87,3 +87,16 @@ echo 1 > cpu1/online;echo 1 > cpu2/online;echo 1 > cpu3/online;
 //                    lastApp = ""
 //                }
 //            }
+
+
+ # res = str(check_output(
+                            #     "adb shell dumpsys battery", shell=True).decode('utf-8'))
+                            # if self.device == "Nexus 6":
+                            #     res = int(res.replace("\n", ",").strip().split(",")[10].split(":")[1].strip())
+                            # elif self.device == "Nexus 5":
+                            #     res = int(res.replace("\r\n", ",").strip().split(",")[8].split(":")[1].strip())
+                            # if res < 100:
+                            #     errorF = open("error_file.txt", "a+")
+                            #     errorF.write(
+                            #         f"BATERIA ABAIXO DE 100. {self.device}, {gov},{app},{i}\n")
+                            #     errorF.close()

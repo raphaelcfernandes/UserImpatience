@@ -77,6 +77,13 @@ void AdbManager::typeWithKeyboard(std::string text, bool saveToFile) {
     }
 }
 
+void typeWholeWord(std::string word){
+    std::string cmd = "adb shell input text " + word;
+    std::cout<<cmd<<std::endl;
+    popen(cmd.c_str(), "r");
+    Generic::getInstance()->sleep(2000);
+}
+
 void AdbManager::turnScreenOnAndUnlock() {
     std::string cmd = "adb shell input keyevent 26";
     popen(cmd.c_str(), "r");
@@ -88,26 +95,42 @@ void AdbManager::turnScreenOnAndUnlock() {
 void AdbManager::setUImpatience(std::string timeToReadTA,
                                 std::string decreaseCpuInterval,
                                 std::string decreaseCpuFrequency,
-                                std::string increaseCpuFrequency) {
-    tap("394 687", false);
-    typeWithKeyboard(timeToReadTA, false);
-    tap("540 860", false);
-    typeWithKeyboard(decreaseCpuInterval, false);
-    tap("294 1062", false);
-    typeWithKeyboard(increaseCpuFrequency, false);
-    tap("534 1300", false);
-    typeWithKeyboard(increaseCpuFrequency, false);
+                                std::string increaseCpuFrequency,
+                                std::string userImpatienceLevel,
+                                std::string device) {
+    if (device == "Nexus 6") {
+        tap("313 691", false);
+        typeWithKeyboard(timeToReadTA, false);
+        keyevent(66, false);
+        typeWithKeyboard(decreaseCpuInterval, false);
+        keyevent(66, false);
+        typeWithKeyboard(increaseCpuFrequency, false);
+        keyevent(66, false);
+        typeWithKeyboard(decreaseCpuFrequency, false);
+        keyevent(66, false);
+        typeWithKeyboard(userImpatienceLevel, false);
+        tap("322 2484", false);
+    }
+    // tap("394 687", false);
+    // typeWithKeyboard(timeToReadTA, false);
+    // tap("540 860", false);
+    // typeWithKeyboard(decreaseCpuInterval, false);
+    // tap("294 1062", false);
+    // typeWithKeyboard(increaseCpuFrequency, false);
+    // tap("534 1300", false);
+    // typeWithKeyboard(increaseCpuFrequency, false);
 }
 
 void AdbManager::setGovernorInUserImpatienceApp(
     std::string governor, std::string timeToReadTA = NULL,
     std::string decreaseCpuInterval = NULL,
     std::string decreaseCpuFrequency = NULL,
-    std::string increaseCpuFrequency = NULL, std::string device = NULL) {
+    std::string increaseCpuFrequency = NULL,
+    std::string userImpatienceLevel = NULL, std::string device = NULL) {
     keyevent(3, false);
     tap(mainMenuCoordinate, false);
     tap(quickSearchAppCoordinate, false);
-    typeWithKeyboard("battery", false);
+    typeWholeWord("battery");
     tap(appLocationCoordinate, false);
     if (device == "Nexus 5") {
         // Deactivate button
@@ -129,7 +152,8 @@ void AdbManager::setGovernorInUserImpatienceApp(
         } else {  // userspace
             tap("185 1605", false);
             setUImpatience(timeToReadTA, decreaseCpuInterval,
-                           decreaseCpuFrequency, increaseCpuFrequency);
+                           decreaseCpuFrequency, increaseCpuFrequency,
+                           userImpatienceLevel, device);
         }
         // Save button
         tap("128 556", false);
@@ -158,10 +182,11 @@ void AdbManager::setGovernorInUserImpatienceApp(
         } else {  // userspace
             tap("185 1605", false);
             setUImpatience(timeToReadTA, decreaseCpuInterval,
-                           decreaseCpuFrequency, increaseCpuFrequency);
+                           decreaseCpuFrequency, increaseCpuFrequency,
+                           userImpatienceLevel, device);
         }
         // Save button
-        tap("140 652", false);
+        tap("152 1638", false);
         // Main menu
         tap("124 362", false);
         // Activate

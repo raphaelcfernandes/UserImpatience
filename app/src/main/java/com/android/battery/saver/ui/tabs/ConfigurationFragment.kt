@@ -26,7 +26,7 @@ class ConfigurationFragment : Fragment() {
         button.setOnClickListener {
             val governor = spinner.selectedItem.toString()
             Preferences.setGovernor(context!!, governor)
-            if (governor == "UImpatience") {
+            if (governor == "userspace") {
                 Preferences.setReadTAInterval(context!!,
                         readTA.editText?.text.toString().toInt())
                 Preferences.setDecreaseCPUInterval(context!!,

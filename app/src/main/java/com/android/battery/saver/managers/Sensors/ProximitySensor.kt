@@ -21,11 +21,11 @@ class ProximitySensor(context: Context) : SensorEventListener {
     }
 
     override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
-        println("bbla")
+
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
-        println(event!!.values[0])
+
     }
 
 }

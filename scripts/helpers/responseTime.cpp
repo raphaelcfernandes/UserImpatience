@@ -8,7 +8,7 @@ int ResponseTime::calculateResponseTime() {
         pos = 0;
     int IDLE = 0, DIFF_IDLE = 0, DIFF_TOTAL = 0, media = 0;
     std::string text = "";
-    while (DIFF_USAGE >= 4) {
+    while (DIFF_USAGE > 5) {
         std::string CPU = Generic::getInstance()->GetStdoutFromCommand(
             "adb shell top -d .4 -n 1 -m 1");
         for (int i = 0; i < CPU.length(); i++) {

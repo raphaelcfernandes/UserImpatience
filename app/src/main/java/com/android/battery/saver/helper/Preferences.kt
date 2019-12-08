@@ -31,7 +31,7 @@ object Preferences {
     fun setImpatienceLevel(context: Context, impatienceLevel: Int) {
         val sharedPref: SharedPreferences.Editor =
                 context.getSharedPreferences(SHARED_PREFS_FILE_NAME, Context.MODE_PRIVATE).edit()
-        sharedPref.putInt(KEY_PREFS_READ_TA_INTERVAL, impatienceLevel)
+        sharedPref.putInt(KEY_PREFS_IMPATIENCE_LEVEL, impatienceLevel)
         sharedPref.apply()
     }
 
@@ -82,9 +82,9 @@ object Preferences {
         sharedPref.apply()
     }
 
-    fun getImpatienceLevel(context: Context): Int? {
+    fun getImpatienceLevel(context: Context): Int {
         return context.getSharedPreferences(SHARED_PREFS_FILE_NAME, Context.MODE_PRIVATE).getInt(
-                KEY_PREFS_IMPATIENCE_LEVEL, 0)
+                KEY_PREFS_IMPATIENCE_LEVEL, -1)
     }
 
     fun getBackgroundServiceStatus(context: Context): String? {
@@ -92,12 +92,12 @@ object Preferences {
                 KEY_PREFS_BACKGROUND_RUNNING, null)
     }
 
-    fun getMarginToIncreaseCpu(context: Context): Int? {
+    fun getMarginToIncreaseCpu(context: Context): Int {
         return context.getSharedPreferences(SHARED_PREFS_FILE_NAME, Context.MODE_PRIVATE).getInt(
                 KEY_PREFS_INCREASE_CPU_MARGIN, 0)
     }
 
-    fun getReadTAInterval(context: Context): Int? {
+    fun getReadTAInterval(context: Context): Int {
         return context.getSharedPreferences(SHARED_PREFS_FILE_NAME, Context.MODE_PRIVATE).getInt(
                 KEY_PREFS_READ_TA_INTERVAL, 0)
     }
@@ -107,7 +107,7 @@ object Preferences {
                 KEY_PREFS_GOVERNOR, null)
     }
 
-    fun getDecreaseCPUInterval(context: Context): Int? {
+    fun getDecreaseCPUInterval(context: Context): Int {
         return context.getSharedPreferences(SHARED_PREFS_FILE_NAME, Context.MODE_PRIVATE).getInt(
                 KEY_PREFS_DECREASE_CPU_TIMEINTERVAL, 0)
     }

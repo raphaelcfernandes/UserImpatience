@@ -7,6 +7,6 @@
         <item>ondemand</item>
         <item>powersave</item>
         <item>performance</item>
-        <item>UImpatience</item>
+        <item>userspace</item>
     </string-array>
 </resources>

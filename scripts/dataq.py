@@ -158,7 +158,15 @@ class DataQProcess:
                     iteration = parser[3]
                     # Retrieve the device we are using for test
                     device = parser[4]
-                    f = open(f"results/{device}/{gov}/{app}/{iteration}.txt", "w+")
+                    if gov == "userspace":
+                        readTA = parser[5]
+                        decreaseCpuI = parser[6]
+                        decreaseCpuF = parser[7]
+                        increaseCpuF = parser[8]
+                        impatienceLevel = parser[9]
+                        f = open(f"results/{device}/{gov}/{app}/readTA{readTA}_decreaseCpuI{decreaseCpuI}_decreaseCpuF{decreaseCpuF}_increaseCpuF{increaseCpuF}_impatienceLevel{impatienceLevel}/{iteration}.txt", "w+")
+                    else:
+                        f = open(f"results/{device}/{gov}/{app}/{iteration}.txt", "w+")
                     f.write('amperes,timestamp\n')
                 if self.command == "STOP":
                     acquiring = False

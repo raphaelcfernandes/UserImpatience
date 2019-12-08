@@ -19,16 +19,17 @@ int main(int argc, char *argv[]) {
     string app = "";
     string iteration = "";
     string device = "Nexus 6";
+    string timeToReadTA, decreaseCpuInterval, decreaseCpuFrequency,
+        increaseCpuF, userImpatienceLevel;
     AdbManager adb(device);
     if (cmd == "set") {
         // We are setting Uimpatience
-        string timeToReadTA, decreaseCpuInterval, decreaseCpuFrequency,
-            marginToIncreaseCpu;
         if (argc > 3) {
             timeToReadTA = argv[3];
             decreaseCpuInterval = argv[4];
             decreaseCpuFrequency = argv[5];
-            marginToIncreaseCpu = argv[6];
+            increaseCpuF = argv[6];
+            userImpatienceLevel = argv[7];
         }
         governor = argv[2];
 
@@ -37,7 +38,7 @@ int main(int argc, char *argv[]) {
         // decreaseCpuFrequency,margintoIncrease
         adb.setGovernorInUserImpatienceApp(
             governor, timeToReadTA, decreaseCpuInterval, decreaseCpuFrequency,
-            marginToIncreaseCpu, device);
+            increaseCpuF, userImpatienceLevel, device);
     } else {
         app = argv[2];
         if (cmd == "search") {
@@ -49,8 +50,20 @@ int main(int argc, char *argv[]) {
         if (cmd == "run") {
             governor = argv[3];
             iteration = argv[4];
-            Generic::getInstance()->createFile(governor, app, iteration,
-                                               device);
+            timeToReadTA = argv[5];
+            decreaseCpuInterval = argv[6];
+            decreaseCpuFrequency = argv[7];
+            increaseCpuF = argv[8];
+            userImpatienceLevel = argv[9];
+            if (governor == "userspace") {
+                Generic::getInstance()->createFile(
+                    governor, app, iteration, device, timeToReadTA,
+                    decreaseCpuInterval, decreaseCpuFrequency, increaseCpuF,
+                    userImpatienceLevel);
+            } else {
+                Generic::getInstance()->createFile(governor, app, iteration,
+                                                   device);
+            }
             std::cout << "C++/ADB going to run " << app << endl;
             adb.tap(adb.appLocationCoordinate, false);
             if (app == "gmail") {

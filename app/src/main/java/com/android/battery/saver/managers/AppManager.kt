@@ -13,7 +13,7 @@ object AppManager {
                 arrayOf("su", "-c", "top -n 1 | grep \" ta \" "))
         ).split("[\n]".toRegex()).forEach {
             val app = it.split(" ")
-            if (app[app.size - 1] != "su" && app[app.size - 1] != "")
+            if (app[app.size - 1] != "su" && app[app.size - 1] != "" && !app[app.size-1].contains(":"))
                 return app[app.size - 1]
         }
         return ""
