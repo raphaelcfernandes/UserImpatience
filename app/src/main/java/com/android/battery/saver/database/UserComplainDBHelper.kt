@@ -56,6 +56,7 @@ class UserComplainDBHelper(context: Context) :
         contentValues.put(DBContract.UserComplainInfo.UIMPATIENCE_LEVEL, uimpatienceLevel)
         contentValues.put(DBContract.UserComplainInfo.TIMESTAMP, System.currentTimeMillis())
         db.insert(DBContract.UserComplainInfo.TABLE_NAME, null, contentValues)
+        db.close()
     }
 
     private fun createTable(): String {

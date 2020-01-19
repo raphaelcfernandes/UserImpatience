@@ -5,9 +5,9 @@
 #include "../helpers/responseTime.hpp"
 
 class Chrome {
- public:
-  Chrome();
-  virtual ~Chrome();
-  void chromeScript(std::string device);
+   public:
+    Chrome();
+    virtual ~Chrome();
+    void chromeScript(std::string device);
 };
 #endif

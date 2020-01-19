@@ -4,20 +4,25 @@ Spotify::Spotify() {}
 Spotify::~Spotify() {}
 
 void Spotify::spotifyScript(std::string device) {
-    AdbManager adb(device);
-    if(device == "Nexus 5") {
-      adb.tap("548 1662", true);
-        adb.tap("476 628", true);
-        adb.typeWithKeyboard("Ozzy Osbourne Dee", true);
-        adb.tap("374 336", true);
+    AdbManager::getInstance()->openAppWithShellMonkey("spotify");
+    if (device == "Nexus 5") {
+        AdbManager::getInstance()->tap("548 1662", true);
+        AdbManager::getInstance()->tap("476 628", true);
+        AdbManager::getInstance()->typeWithKeyboard("Ozzy Osbourne Dee", true);
+        AdbManager::getInstance()->tap("374 336", true);
         Generic::getInstance()->sleep(50000);
     }
     if (device == "Nexus 6") {
-        adb.tap("702 2302", true);
-        adb.tap("735 759", true);
-        adb.typeWithKeyboard("Ozzy Osbourne Dee", true);
-        adb.tap("439 391", true);
-        Generic::getInstance()->sleep(50000);
+        AdbManager::getInstance()->tap("702 2302", true);
+        AdbManager::getInstance()->tap("735 759", true);
+        AdbManager::getInstance()->typeWithKeyboard("Ozzy Osbourne Dee", true);
+        auto start = std::chrono::high_resolution_clock::now();
+        AdbManager::getInstance()->tap("439 391", true);
+        auto stop = std::chrono::high_resolution_clock::now();
+        Generic::getInstance()->sleep(
+            50000 -
+            (std::chrono::duration_cast<std::chrono::milliseconds>(stop - start)
+                 .count()));
     }
-    adb.closeApp(device);
+    AdbManager::getInstance()->closeApp(device);
 }

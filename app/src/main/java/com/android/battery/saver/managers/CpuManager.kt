@@ -5,6 +5,7 @@ import com.android.battery.saver.SearchAlgorithms
 import com.android.battery.saver.activities.MainActivity
 import com.android.battery.saver.dao.TestInfoDAOImpl
 import com.android.battery.saver.dao.UserComplainDAOImpl
+import com.android.battery.saver.event.OnCpuResetThreshold
 import com.android.battery.saver.event.OnCpuScaleAllDownEvent
 import com.android.battery.saver.event.OnCpuScaleAllUpEvent
 import com.android.battery.saver.event.OnSetAllCoreToMaxEvent
@@ -35,6 +36,15 @@ object CpuManager {
         EventBus.getDefault().register(this)
     }
 
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    fun onCpuEvent(onCpuResetThreshold: OnCpuResetThreshold) {
+        println("resetting threshold")
+        for (i in 0 until numberOfCores) {
+            cpuCores[i]!!.threshold = 0
+        }
+    }
+
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     fun onCpuEvent(onSetAllCoreToMaxEvent: OnSetAllCoreToMaxEvent) {
         setAllCoresToMax()
@@ -42,14 +52,15 @@ object CpuManager {
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     fun onCpuEvent(onCpuScaleAllDownEvent: OnCpuScaleAllDownEvent) {
-        scaleAllCpuDown(onCpuScaleAllDownEvent.decreaseCpuFrequency)
-        val testInfoModel = TestsInfoModel(onCpuScaleAllDownEvent.currentApp, getAllCoresFrequencies(),
-                getAllCoresThreshold(), onCpuScaleAllDownEvent.readInterval, onCpuScaleAllDownEvent.iteration,
-                onCpuScaleAllDownEvent.decreaseCpuInterval, onCpuScaleAllDownEvent.decreaseCpuFrequency,
-                onCpuScaleAllDownEvent.increaseCpuFrequency, onCpuScaleAllDownEvent.UImpatienceLevel)
-        val testInfoDAOImpl = TestInfoDAOImpl(MainActivity.appContext)
-        testInfoDAOImpl.insert(testInfoModel)
-        testInfoDAOImpl.get()
+        if (scaleAllCpuDown(onCpuScaleAllDownEvent.decreaseCpuFrequency)) {
+            println("decreasing cpu")
+            val testInfoModel = TestsInfoModel(onCpuScaleAllDownEvent.currentApp, getAllCoresFrequencies(),
+                    getAllCoresThreshold(), onCpuScaleAllDownEvent.readInterval, onCpuScaleAllDownEvent.iteration,
+                    onCpuScaleAllDownEvent.decreaseCpuInterval, onCpuScaleAllDownEvent.decreaseCpuFrequency,
+                    onCpuScaleAllDownEvent.increaseCpuFrequency, onCpuScaleAllDownEvent.UImpatienceLevel)
+            val testInfoDAOImpl = TestInfoDAOImpl(MainActivity.appContext)
+            testInfoDAOImpl.insert(testInfoModel)
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
@@ -327,18 +338,18 @@ object CpuManager {
         // In this case, ALL cores will have the same speed, then get the freqPos of any core
         // Will lead to the same freqPos for ALL cores
         val freqPos = cpuCores[0]!!.freqPos
-        if (!configHasThreshold() || (0 until 100).random() < 5) {
+        if (!configHasThreshold() || (0 until 10).random() < 1) {
             if (freqPos - amountOfFrequencyToReduce >= 0) {
                 for (i in 0 until numberOfCores) {
                     setCoreFrequency(i, cpuCores[0]!!.frequencies[freqPos - amountOfFrequencyToReduce])
                 }
-                return true
             } else {
                 //set all to minimum
                 for (i in 0 until numberOfCores) {
                     setCoreFrequency(i, cpuCores[0]!!.frequencies[0])
                 }
             }
+            return true
         }
 
         return false

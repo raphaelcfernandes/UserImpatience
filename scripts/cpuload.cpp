@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <iostream>
 #include <string>
 #include "appScripts/chrome.hpp"
@@ -21,7 +22,7 @@ int main(int argc, char *argv[]) {
     string device = "Nexus 6";
     string timeToReadTA, decreaseCpuInterval, decreaseCpuFrequency,
         increaseCpuF, userImpatienceLevel;
-    AdbManager adb(device);
+    AdbManager::getInstance()->configureLocationByDevice(device);
     if (cmd == "set") {
         // We are setting Uimpatience
         if (argc > 3) {
@@ -32,30 +33,33 @@ int main(int argc, char *argv[]) {
             userImpatienceLevel = argv[7];
         }
         governor = argv[2];
-
+        AdbManager::getInstance()->governor = governor;
         cout << "C++/ADB setting " << governor << endl;
-        // Governor, timeToreadTA, decreaseCpuInterval,
-        // decreaseCpuFrequency,margintoIncrease
-        adb.setGovernorInUserImpatienceApp(
-            governor, timeToReadTA, decreaseCpuInterval, decreaseCpuFrequency,
-            increaseCpuF, userImpatienceLevel, device);
+        AdbManager::getInstance()->setGovernorInUserImpatienceApp(
+            governor, timeToReadTA, decreaseCpuInterval,
+            decreaseCpuFrequency, increaseCpuF, userImpatienceLevel, device);
     } else {
         app = argv[2];
+        governor = argv[3];
+        AdbManager::getInstance()->governor = governor;
         if (cmd == "search") {
-            adb.keyevent(3, false);
-            adb.tap(adb.mainMenuCoordinate, false);
-            adb.tap(adb.quickSearchAppCoordinate, false);
-            adb.typeWithKeyboard(app, false);
+            AdbManager::getInstance()->keyevent(3, false);
+            // AdbManager::getInstance()->openAppWithShellMonkey(app);
+            std::cout << "going to sleep 2s after keyeven3" << std::endl;
+            Generic::getInstance()->sleep(2000);
         }
         if (cmd == "run") {
-            governor = argv[3];
             iteration = argv[4];
-            timeToReadTA = argv[5];
-            decreaseCpuInterval = argv[6];
-            decreaseCpuFrequency = argv[7];
-            increaseCpuF = argv[8];
-            userImpatienceLevel = argv[9];
+            AdbManager::getInstance()->governor = governor;
             if (governor == "userspace") {
+                timeToReadTA = argv[5];
+                decreaseCpuInterval = argv[6];
+                decreaseCpuFrequency = argv[7];
+                increaseCpuF = argv[8];
+                userImpatienceLevel = argv[9];
+                AdbManager::getInstance()->uimpatienceLevel =
+                stoi(userImpatienceLevel);
+                Generic::getInstance()->setUserComplaintThreshold(AdbManager::getInstance()->uimpatienceLevel);
                 Generic::getInstance()->createFile(
                     governor, app, iteration, device, timeToReadTA,
                     decreaseCpuInterval, decreaseCpuFrequency, increaseCpuF,
@@ -65,7 +69,6 @@ int main(int argc, char *argv[]) {
                                                    device);
             }
             std::cout << "C++/ADB going to run " << app << endl;
-            adb.tap(adb.appLocationCoordinate, false);
             if (app == "gmail") {
                 Gmail g;
                 g.gmailScript(device);

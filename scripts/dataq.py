@@ -163,7 +163,7 @@ class DataQProcess:
                         decreaseCpuI = parser[6]
                         decreaseCpuF = parser[7]
                         increaseCpuF = parser[8]
-                        impatienceLevel = parser[9]
+                        impatienceLevel = parser[9]                        
                         f = open(f"results/{device}/{gov}/{app}/readTA{readTA}_decreaseCpuI{decreaseCpuI}_decreaseCpuF{decreaseCpuF}_increaseCpuF{increaseCpuF}_impatienceLevel{impatienceLevel}/{iteration}.txt", "w+")
                     else:
                         f = open(f"results/{device}/{gov}/{app}/{iteration}.txt", "w+")

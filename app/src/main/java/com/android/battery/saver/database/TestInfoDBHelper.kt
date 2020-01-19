@@ -56,6 +56,7 @@ class TestInfoDBHelper(context: Context) :
         contentValues.put(DBContract.TestsInfo.UIMPATIENCE_LEVEL, uimpatienceLevel)
         contentValues.put(DBContract.TestsInfo.TIMESTAMP, System.currentTimeMillis())
         db.insert(DBContract.TestsInfo.TABLE_NAME, null, contentValues)
+        db.close()
     }
 
     private fun createTable(): String {

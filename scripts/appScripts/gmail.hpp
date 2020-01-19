@@ -5,9 +5,9 @@
 #include "../helpers/responseTime.hpp"
 
 class Gmail {
- public:
-  Gmail();
-  virtual ~Gmail();
-  void gmailScript(std::string device);
+   public:
+    Gmail();
+    virtual ~Gmail();
+    void gmailScript(std::string device);
 };
 #endif

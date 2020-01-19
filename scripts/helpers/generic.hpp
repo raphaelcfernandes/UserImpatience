@@ -6,12 +6,14 @@
 #include <iostream>
 #include <string>
 #include <thread>
+#include <cstdlib>
 
 class Generic {
    private:
     Generic(){};
     static Generic* instance;
     virtual ~Generic(){};
+    int userComplaintThreshold;
 
    public:
     std::ofstream file;
@@ -28,6 +30,9 @@ class Generic {
                     std::string userImpatienceLevel);
     void writeToFile(std::string event);
     void sleep(int timeInMs);
+    bool generateRandomNumber();
+    void setUserComplaintThreshold(int userImpatienceLevel);
+    int getuserComplaintThreshold();
 };
 
 #endif

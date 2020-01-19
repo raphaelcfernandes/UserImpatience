@@ -1,12 +1,39 @@
 #include "generic.hpp"
+#include "adbManager.hpp"
 
 Generic* Generic::instance = NULL;
 
 Generic* Generic::getInstance() {
     if (!instance) {
         instance = new Generic();
+        std::srand(std::time(nullptr));
     }
     return instance;
+}
+
+int Generic::getuserComplaintThreshold() {
+    return this->userComplaintThreshold;
+}
+
+void Generic::setUserComplaintThreshold(int userImpatienceLevel) {
+    // Less complains
+    if (userImpatienceLevel == 0) {
+        this->userComplaintThreshold = 10;
+    } else if (userImpatienceLevel == 1) {
+        this->userComplaintThreshold = 30;
+    } else if (userImpatienceLevel == 2) {
+        this->userComplaintThreshold = 40;
+    }
+}
+
+bool Generic::generateRandomNumber() {
+    int random = std::rand() / ((RAND_MAX + 1u) / 100);
+    if (random < this->userComplaintThreshold) {
+        this->userComplaintThreshold =
+            (this->userComplaintThreshold * this->userComplaintThreshold) / 100;
+        return true;
+    }
+    return false;
 }
 
 std::time_t Generic::getCurrentTimestamp() {
@@ -25,8 +52,6 @@ std::string Generic::GetStdoutFromCommand(std::string cmd) {
     FILE* stream;
     const int max_buffer = 256;
     char buffer[max_buffer];
-    // cmd.append(" 2>&1");
-
     stream = popen(cmd.c_str(), "r");
     if (stream) {
         while (!feof(stream))
@@ -43,6 +68,7 @@ void Generic::createFile(std::string governor, std::string app,
     std::cout << p << std::endl;
     this->file.open(p);
 }
+
 void Generic::createFile(std::string governor, std::string app,
                          std::string iteration, std::string device,
                          std::string timeToReadTA,
@@ -51,7 +77,7 @@ void Generic::createFile(std::string governor, std::string app,
                          std::string increaseCpuFrequency,
                          std::string userImpatienceLevel) {
     std::string p =
-        "adbTouchEvents/" + device + '/' + governor + '/' + app + "/readTa" +
+        "adbTouchEvents/" + device + '/' + governor + '/' + app + "/readTA" +
         timeToReadTA + "_decreaseCpuI" + decreaseCpuInterval + "_decreaseCpuF" +
         decreaseCpuFrequency + "_increaseCpuF" + increaseCpuFrequency +
         "_impatienceLevel" + userImpatienceLevel + "/" + iteration + ".txt";

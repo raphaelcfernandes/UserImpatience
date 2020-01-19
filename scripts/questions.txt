@@ -1,44 +1,13 @@
-Todo
+photos: 1m21
+gmail: 2m6
+chrome: 1m19
+spotify: 1m23
 
-create test flow
-fix uimpatience db
-Criar media de consumo usando 100ms e 5V(9V)
-Tentar criar modelo com maximo, minimo e valores intermediarios de frequencia
 Verificar se é melhor reduzir do menor pro maior ou reduzir todas as frequencias ao mesmo tempo
 Procurar algum paper sobre response time dos apps
 
-test youtube with diferente niveis de cpu:
-only cpu0 at max:
-    Response time for commands are bit slow, but no lagging to watch video even watching in 1060p
-only cpu0 at mid freq value:
-    Response time um pouco lento
-    Demora aprox 12 segundos para carregar os primeiros resultados da request.
-    Dentro do app demora entre 3-4 segundos pra carregar resultado de busca
-    3 segundos +- pra abrir o video. Enquanto vidoe toca, demorou 14s pra carregar restante da pagina (nos videos seguintes demoraram menos)
-    Celular automaticamente setou a qualidade do video pra 240p, após alguns segundos, foi para 1080
-    N percebi travamento do video e nem queda de qualidade. Acredito que demora um pouco pra bufferizar e dps o processamento é praticamente minimo
-    Leve travamento do video quando media response time com script a cada 100ms 
-        Automaticamente setou para o minimo possivel de qualdiade. Voltou para 1080 apos 30 segundos +-
-
 ./rdumtool --device-type=UM24C --bluetooth-device=00:BA:55:57:B5:58 --watch 1 --json >> gmail_ondemand.txt
 
-Nexus 5:
-cat 10ms:
-    - Interactive: 54
-    - Performance: 27
-    - Conservative: 42
-    - Powersave: 61
-    - Ondemand: 32
-
-gasto do cat (interactive):
-
-10ms: 25% em media
-100ms: 18% em media
-1000ms: 3% em media
-2000ms: 2% em media
-
-gasto do cat (powersave):
-100ms: 18% em media
 while true; do echo "-----------------------------------------------"; echo "INPUT_BOOST_FREQ"; cat /sys/module/cpu_boost/parameters/input_boost_freq; echo "\nCURFREQ"; cat cpu*/cpufreq/scaling_cur_freq; echo "\nMAXFREQ"; cat cpu*/cpufreq/scaling_max_freq; echo "\nMINFREQ"; cat cpu*/cpufreq/scaling_min_freq; cat cpu*/cpufreq/scaling_governor;cat cpu0/cpufreq/scaling_available_frequencies; echo '\n'; sleep .5; done
 echo 0 > cpu1/online;echo 0 > cpu2/online;echo 0 > cpu3/online;
 echo 1 > cpu1/online;echo 1 > cpu2/online;echo 1 > cpu3/online;

@@ -8,6 +8,7 @@ import android.content.IntentFilter
 import android.os.IBinder
 import android.util.Log
 import com.android.battery.saver.dao.UsageInfoDAOImpl
+import com.android.battery.saver.event.OnCpuResetThreshold
 import com.android.battery.saver.event.OnCpuScaleAllDownEvent
 import com.android.battery.saver.event.OnCpuScaleAllUpEvent
 import com.android.battery.saver.event.OnSetAllCoreToMaxEvent
@@ -66,6 +67,8 @@ class BackgroundService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
         var incIteration = false
+//        readTAinterval = 1
+//        decreaseCPUInterval = 2
         runnable = Runnable {
             //Check if screen is on or off
             if (isScreenOn) {
@@ -80,14 +83,16 @@ class BackgroundService : Service() {
                         // using this line to execute tests to collect data/results
                         if (currentApp == "com.google.android.googlequicksearchbox" || currentApp == "com.google.android.googlequicksearchbox:search") {
                             incIteration = true
+                            EventBus.getDefault().post(OnCpuResetThreshold())
                         } else {
                             if (incIteration) {
-                                Log.d(Logger.DEBUG, iteration.toString())
+                                Log.d(Logger.DEBUG, "adding to iteration: $iteration")
                                 iteration++
                                 incIteration = false
+                                println("Setting core to max")
+                                EventBus.getDefault().post(OnSetAllCoreToMaxEvent())
+                                clock = 0
                             }
-                            EventBus.getDefault().post(OnSetAllCoreToMaxEvent())
-                            clock = 0
                         }
                         lastApp = currentApp
                     } else if (lastApp == currentApp && (currentApp != "com.google.android.googlequicksearchbox" && currentApp != "com.google.android.googlequicksearchbox:search")) {
@@ -95,9 +100,9 @@ class BackgroundService : Service() {
                         // decrease cpu and save to db:
                         // cpu freqs, iteration, timestamp, app, readTa, decreaseCpuInterval, decreaseCpuFreq, IncreaseCpuFreq, uimpatiencelevel
                         if (clock >= decreaseCPUInterval) {
-//                            EventBus.getDefault().post(OnCpuScaleAllDownEvent(currentApp, readTAinterval,
-//                                    iteration - 1, decreaseCPUInterval, decreaseCPUFrequency,
-//                                    increaseCpuAfterComplaining, uimpatienceLevel))
+                            EventBus.getDefault().post(OnCpuScaleAllDownEvent(currentApp, readTAinterval,
+                                    iteration - 1, decreaseCPUInterval, decreaseCPUFrequency,
+                                    increaseCpuAfterComplaining, uimpatienceLevel))
                             clock = 0
                         }
                     }
@@ -163,6 +168,7 @@ class BackgroundService : Service() {
                 isScreenOn = true
             }
             if (intent.action == "com.android.battery.saver.USER_COMPLAINED") {
+                println("Increasing CPU freq")
                 EventBus.getDefault().post(OnCpuScaleAllUpEvent(increaseCpuAfterComplaining, currentApp,
                         readTAinterval, iteration - 1, decreaseCPUInterval, decreaseCPUFrequency,
                         increaseCpuAfterComplaining, uimpatienceLevel))

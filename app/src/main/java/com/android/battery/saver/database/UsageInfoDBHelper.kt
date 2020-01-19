@@ -43,6 +43,7 @@ class UsageInfoDBHelper(context: Context) :
             contentValues.put(DBContract.UsageInfo.THRESHOLD + i, coreThresholds[i])
         }
         db.insert(DBContract.UsageInfo.TABLE_NAME, null, contentValues)
+        db.close()
     }
 
     private fun checkIfDataAlreadyExists(appName: String): Boolean {
@@ -84,6 +85,7 @@ class UsageInfoDBHelper(context: Context) :
                 DBContract.UsageInfo.APP_NAME + " = ? ",
                 arrayOf(appName)
         )
+        db.close()
     }
 
     fun getAppData(appName: String): Cursor {

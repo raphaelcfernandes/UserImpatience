@@ -1,6 +1,16 @@
 #include "adbManager.hpp"
 
-AdbManager::AdbManager(std::string device) {
+AdbManager* AdbManager::instance = NULL;
+
+AdbManager* AdbManager::getInstance() {
+    if (!instance) {
+        instance = new AdbManager();
+    }
+    return instance;
+}
+
+void AdbManager::configureLocationByDevice(std::string device) {
+    this->device = device;
     if (device == "Nexus 5") {
         midButtonAndroid = "535 1838";
         mainMenuCoordinate = "530 1668";
@@ -12,8 +22,28 @@ AdbManager::AdbManager(std::string device) {
         quickSearchAppCoordinate = "218 228";
         appLocationCoordinate = "236 478";
     }
-};
-AdbManager::~AdbManager(){};
+}
+
+void AdbManager::openAppWithShellMonkey(std::string app) {
+    // Package name can be gathered with:
+    // adb shell pm list packages -f | grep "spotify/chrome/gm/photos/etc..."
+    if (app == "chrome") {
+        app = "com.android.chrome";
+    } else if (app == "spotify") {
+        app = "com.spotify.music";
+    } else if (app == "photos") {
+        app = "com.google.android.apps.photos";
+    } else if (app == "gmail") {
+        app = "com.google.android.gm";
+    } else if (app == "battery") {
+        app = "com.android.battery.saver";
+    }
+    std::string cmd = "adb shell monkey -p " + app +
+                      " -c "
+                      "android.intent.category.LAUNCHER 1";
+    popen(cmd.c_str(), "r");
+    responseTime.calculateResponseTime(this->governor);
+}
 
 void AdbManager::closeApp(std::string device) {
     if (device == "Nexus 5") {
@@ -26,23 +56,47 @@ void AdbManager::closeApp(std::string device) {
     }
 }
 
+void AdbManager::keyevent(int code, bool saveToFile) {
+    std::string cmd = "adb shell input keyevent " + std::to_string(code);
+    std::cout << cmd << std::endl;
+    if (saveToFile) {
+        Generic::getInstance()->writeToFile("keyevent");
+    }
+    popen(cmd.c_str(), "r");
+    responseTime.calculateResponseTime(this->governor);
+}
+
 void AdbManager::tap(std::string position, bool saveToFile) {
+    if (Generic::getInstance()->generateRandomNumber()) {
+        uimpatienceClompainNotification(true);
+    }
     std::string cmd = "adb shell input tap " + position;
+    std::cout << cmd << std::endl;
+    popen(cmd.c_str(), "r");
     if (saveToFile) {
         Generic::getInstance()->writeToFile("tap");
     }
-    std::cout << cmd << std::endl;
-    popen(cmd.c_str(), "r");
-    responseTime.calculateResponseTime();
+    responseTime.calculateResponseTime(this->governor);
 }
 
+// Not using tap and swipe because it could lead to a loop where each tap of
+// ComplainNotification Could result in more complaining
 void AdbManager::uimpatienceClompainNotification(bool saveToFile) {
-    swipe("884 7", "884 630", 100, saveToFile);
-    tap("851 519", saveToFile);
+    std::string swipe = "adb shell input swipe 884 7 884 630 100";
+    std::string tap = "adb shell input tap 851 519";
+    popen(swipe.c_str(), "r");
+    Generic::getInstance()->writeToFile("swipeComplain");
+    responseTime.calculateResponseTime(this->governor);
+    popen(tap.c_str(), "r");
+    Generic::getInstance()->writeToFile("tapComplain");
+    responseTime.calculateResponseTime(this->governor);
 }
 
 void AdbManager::swipe(std::string from, std::string to, int time,
                        bool saveToFile) {
+    if (Generic::getInstance()->generateRandomNumber()) {
+        uimpatienceClompainNotification(true);
+    }
     std::string cmd = "";
     if (time != 0) {
         cmd = "adb shell input swipe " + from + " " + to + " " +
@@ -55,12 +109,15 @@ void AdbManager::swipe(std::string from, std::string to, int time,
         Generic::getInstance()->writeToFile("swipe");
     }
     popen(cmd.c_str(), "r");
-    responseTime.calculateResponseTime();
+    responseTime.calculateResponseTime(this->governor);
 }
 
 void AdbManager::typeWithKeyboard(std::string text, bool saveToFile) {
+    if (Generic::getInstance()->generateRandomNumber()) {
+        uimpatienceClompainNotification(true);
+    }
     std::string cmd = "";
-    for (char const &c : text) {
+    for (char const& c : text) {
         if (isspace(c)) {
             cmd = "adb shell input keyevent 62";
         } else {
@@ -77,9 +134,9 @@ void AdbManager::typeWithKeyboard(std::string text, bool saveToFile) {
     }
 }
 
-void typeWholeWord(std::string word){
+void AdbManager::typeWholeWord(std::string word) {
     std::string cmd = "adb shell input text " + word;
-    std::cout<<cmd<<std::endl;
+    std::cout << cmd << std::endl;
     popen(cmd.c_str(), "r");
     Generic::getInstance()->sleep(2000);
 }
@@ -128,10 +185,11 @@ void AdbManager::setGovernorInUserImpatienceApp(
     std::string increaseCpuFrequency = NULL,
     std::string userImpatienceLevel = NULL, std::string device = NULL) {
     keyevent(3, false);
-    tap(mainMenuCoordinate, false);
-    tap(quickSearchAppCoordinate, false);
-    typeWholeWord("battery");
-    tap(appLocationCoordinate, false);
+    // tap(mainMenuCoordinate, false);
+    // tap(quickSearchAppCoordinate, false);
+    // typeWholeWord("battery");
+    // tap(appLocationCoordinate, false);
+    openAppWithShellMonkey("battery");
     if (device == "Nexus 5") {
         // Deactivate button
         tap("826 490", false);
@@ -185,22 +243,16 @@ void AdbManager::setGovernorInUserImpatienceApp(
                            decreaseCpuFrequency, increaseCpuFrequency,
                            userImpatienceLevel, device);
         }
-        // Save button
-        tap("152 1638", false);
+        if (governor == "userspace") {
+            // Save button
+            tap("152 1638", false);
+        } else {
+            tap("146 634", false);
+        }
         // Main menu
         tap("124 362", false);
         // Activate
         tap("479 602", false);
     }
     Generic::getInstance()->sleep(4000);
-}
-
-void AdbManager::keyevent(int code, bool saveToFile) {
-    std::string cmd = "adb shell input keyevent " + std::to_string(code);
-    std::cout << cmd << std::endl;
-    if (saveToFile) {
-        Generic::getInstance()->writeToFile("keyevent");
-    }
-    popen(cmd.c_str(), "r");
-    responseTime.calculateResponseTime();
 }

@@ -8,9 +8,10 @@ from subprocess import check_output, CalledProcessError
 
 
 class Tester:
+    # governor = ['performance','ondemand','conservative']
     governor = ['userspace']
-    apps = ['photos']
-    app = 'photos'
+    apps = ['chrome']
+    app = 'chrome'
     # Read interval that userspace background thread will read TA from top in s
     # Values in s
     # timeToReadTA = ["1", "2"]
@@ -23,15 +24,15 @@ class Tester:
     decreaseCPUInterval = ["2"]
     # Amount of frequency to reduce after A.time has passed
     # decreaseCPUFrequency = ["2", "4", "8"]
-    decreaseCPUFrequency = ["3"]
+    decreaseCPUFrequency = ["1"]
     #(Max - current)/C
     # Where C is the following measurements
     # marginToIncreaseCpuFrequency = ["2", "4", "8"]
-    marginToIncreaseCpuFrequency = ["4"]
+    marginToIncreaseCpuFrequency = ["2"]
     # 0 is the user that does not complain at all
     # 5 is the user that complains with high frequency
     # userImpatienceLevel = [0, 1, 2]
-    userImpatienceLevel = [0]
+    userImpatienceLevel = [1]
     dataQ = DataQProcess()
     queue = Queue()
 
@@ -60,7 +61,8 @@ class Tester:
                     for decreaseCPUf in self.decreaseCPUFrequency:
                         for increaseCPUf in self.marginToIncreaseCpuFrequency:
                             for impatienceLevel in self.userImpatienceLevel:
-                                if os.system(f"./cpu set userspace {readTa} {decreaseCPUi} {decreaseCPUf} {increaseCPUf} {impatienceLevel}") == 0:        
+                                print(f"./cpu set userspace {readTa} {decreaseCPUi} {decreaseCPUf} {increaseCPUf} {impatienceLevel}")
+                                if os.system(f"./cpu set userspace {readTa} {decreaseCPUi} {decreaseCPUf} {increaseCPUf} {impatienceLevel}") == 0:
                                     for app in self.apps:
                                         # Create folder for each app inside each governor
                                         if not os.path.exists("results/{}/{}/{}".format(self.device, gov, app)):
@@ -70,25 +72,26 @@ class Tester:
                                             os.mkdir(
                                                 "adbTouchEvents/{}/{}/{}".format(self.device, gov, app))
                                         path = "results/{}/{}/{}/readTA{}_decreaseCpuI{}_decreaseCpuF{}_increaseCpuF{}_impatienceLevel{}".format(self.device,
-                                            gov, app,
-                                            readTa, decreaseCPUi, decreaseCPUf, increaseCPUf, impatienceLevel)
+                                                                                                                                                 gov, app,
+                                                                                                                                                 readTa, decreaseCPUi, decreaseCPUf, increaseCPUf, impatienceLevel)
                                         if not os.path.exists(path):
                                             os.mkdir(path)
-                                            os.mkdir(path.replace("results","adbTouchEvents"))
-                                        for i in range(0, 1):
-                                            print(f"./cpu set userspace {readTa} {decreaseCPUi} {decreaseCPUf} {increaseCPUf} {impatienceLevel} {i}")
+                                            os.mkdir(path.replace(
+                                                "results", "adbTouchEvents"))
+                                        for i in range(0, 30):
+                                            print(
+                                                f"./cpu set userspace {readTa} {decreaseCPUi} {decreaseCPUf} {increaseCPUf} {impatienceLevel} {i}")
                                             self.executeTestUImpatience(self.app, "userspace", i, readTa,
-                                                decreaseCPUi, decreaseCPUf, increaseCPUf, impatienceLevel)
-                                
+                                                                        decreaseCPUi, decreaseCPUf, increaseCPUf, impatienceLevel)
 
         except Exception as e:
             print(e)
-        finally:            
+        finally:
             self.queue.put("STOP")
             self.p.join()
             self.queue.close()
 
-    def test(self):
+    def commonGovernorsTest(self):
         try:
             # Create a folder for each governor
             if not os.path.exists("adbTouchEvents"):
@@ -122,7 +125,7 @@ class Tester:
                         for i in range(0, 30):
                             print("running {} {} iteration: {}".format(gov, app, i))
                             # Save file to its respective governor and app
-                            self.executeTest(app, gov, i)
+                            self.executeCommonGovernorsTest(app, gov, i)
                     self.setGovernor = True
                     self.runApp = False
         except Exception as e:
@@ -132,9 +135,9 @@ class Tester:
             self.p.join()
             self.queue.close()
 
-    def executeTest(self, app, gov, iteration):
+    def executeCommonGovernorsTest(self, app, gov, iteration):
         mythread = CommonThread(app, gov, iteration)
-        if os.system("./cpu search {}".format(app)) == 0:
+        if os.system("./cpu search {} {}".format(app, gov)) == 0:
             self.queue.put(f"RUN:{app}:{gov}:{iteration}:{self.device}")
             mythread.setName("C++ execution")
             mythread.start()
@@ -144,7 +147,7 @@ class Tester:
     def executeTestUImpatience(self, app, gov, iteration, readTa, decreaseCpuI, decreaseCpuF, increaseCpuF, impatienceLevel):
         mythread = UImpatienceThread(
             app, gov, iteration, readTa, decreaseCpuI, decreaseCpuF, increaseCpuF, impatienceLevel)
-        if os.system("./cpu search {}".format(app)) == 0:
+        if os.system("./cpu search {} {}".format(app, gov)) == 0:
             self.queue.put(
                 f"RUN:{app}:{gov}:{iteration}:{self.device}:{readTa}:{decreaseCpuI}:{decreaseCpuF}:{increaseCpuF}:{impatienceLevel}")
             mythread.setName("C++ execution")

@@ -5,9 +5,9 @@
 #include "../helpers/responseTime.hpp"
 
 class Spotify {
- public:
-  Spotify();
-  virtual ~Spotify();
-  void spotifyScript(std::string device);
+   public:
+    Spotify();
+    virtual ~Spotify();
+    void spotifyScript(std::string device);
 };
 #endif

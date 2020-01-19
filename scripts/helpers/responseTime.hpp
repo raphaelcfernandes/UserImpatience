@@ -9,7 +9,7 @@ class ResponseTime {
  public:
   ResponseTime();
   virtual ~ResponseTime();
-  int calculateResponseTime();
+  int calculateResponseTime(std::string governor);
 };
 
 #endif
