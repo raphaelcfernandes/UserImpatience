@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
         AdbManager::getInstance()->governor = governor;
         if (cmd == "search") {
             AdbManager::getInstance()->keyevent(3, false);
-            // AdbManager::getInstance()->openAppWithShellMonkey(app);
+            AdbManager::getInstance()->openAppWithShellMonkey(app);
             std::cout << "going to sleep 2s after keyeven3" << std::endl;
             Generic::getInstance()->sleep(2000);
         }
