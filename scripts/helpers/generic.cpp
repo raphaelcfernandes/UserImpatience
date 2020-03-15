@@ -85,6 +85,120 @@ void Generic::createFile(std::string governor, std::string app,
     this->file.open(p);
 }
 
+void Generic::readPerfData(std::string app)
+{
+
+	this->perfFile.open(app + "_perf.txt", std::ios::in);
+
+	if(perfFile)
+	{
+		long curr;
+		while(true)
+		{
+			this->perfFile >> curr;
+			if(this->perfFile.eof())
+			{
+				break;
+			}
+			this->perf_data.push_back(curr);
+			this->perf_size++;
+		}
+		this->perfFile.close();
+	}
+
+	if(perf_size == 0)
+	{
+		std::cout << "No data could be loaded for performance data." << std::endl;
+		std::cout << "Continued testing will assume '0' speed for performance data." << std::endl;
+		std::cout << "Please run setup to create performance data file." << std:: endl;
+		
+	}	
+}
+
+void Generic::writePerfFile(long time)
+{
+	//std::cout << "time: " << time << std::endl;
+	this->perfFile << time << "\n";		
+	
+}
+
+void Generic::openToWritePerfFile(std::string app)
+{
+	this->perfFile.open(app + "_perf.txt", std::ios::out);
+}
+
+void Generic::closePerfFile()
+{
+	if(this->perfFile)
+	{
+		this->perfFile.close();
+	}
+}
+
+
+
 void Generic::writeToFile(std::string event) {
+	//std::cout << event << std::endl;
     this->file << event + ", " + std::to_string(getCurrentTimestamp()) + "\n";
+}
+
+void Generic::setUserWaitTime(long time)
+{
+	userWaitTime = time;
+}
+
+long Generic::getUserWaitTime()
+{
+	return userWaitTime;
+}
+
+bool Generic::comparePerf(long time)
+{
+	if(!impatience)
+	{
+		return false;
+	}
+	else if(perf_size > 0)
+	{
+		long check = time - perf_data.at(perf_index);
+		//std::cout << "Check: " << check << std::endl;
+		perf_index++;
+		if(perf_index >= perf_size)
+		{
+			std::cout << "Performance analysis has exceeded number of tasks." << std::endl;
+			std::cout << "Resetting performance analysis to first task." << std::endl;
+			perf_index = 0;
+		}
+
+		if(check > userWaitTime)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else
+	{
+		if(time > userWaitTime)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+		
+	}
+}
+
+void Generic::enableImpatience()
+{
+	impatience = true;
+}
+
+void Generic::disableImpatience()
+{
+	impatience = false;
 }

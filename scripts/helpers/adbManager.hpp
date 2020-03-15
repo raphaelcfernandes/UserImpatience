@@ -15,6 +15,8 @@ class AdbManager {
     AdbManager(){};
     static AdbManager* instance;
     virtual ~AdbManager(){};
+	void checkImpatience();
+	
 
    public:
     std::string device = "";
@@ -28,10 +30,12 @@ class AdbManager {
     std::string quickSearchAppCoordinate = "";
     // Coordinate after search for app
     std::string appLocationCoordinate = "";
+	bool setup = false;
 
     static AdbManager* getInstance();
     void tap(std::string position, bool saveToFile);
     void swipe(std::string from, std::string to, int time, bool saveToFile);
+
     void typeWithKeyboard(std::string text, bool saveToFile);
     void turnScreenOnAndUnlock();
     void typeWholeWord(std::string word);
@@ -50,5 +54,6 @@ class AdbManager {
     void uimpatienceClompainNotification(bool saveToFile);
     void openAppWithShellMonkey(std::string app);
     void configureLocationByDevice(std::string device);
+	void checkImpatience(long time);
 };
 #endif

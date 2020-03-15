@@ -37,7 +37,11 @@ void AdbManager::openAppWithShellMonkey(std::string app) {
         app = "com.google.android.gm";
     } else if (app == "battery") {
         app = "com.android.battery.saver";
-    }
+    } else if (app == "youtube") {
+	app = "com.google.android.youtube";
+    }	
+	
+	
     std::string cmd = "adb shell monkey -p " + app +
                       " -c "
                       "android.intent.category.LAUNCHER 1";
@@ -67,22 +71,31 @@ void AdbManager::keyevent(int code, bool saveToFile) {
 }
 
 void AdbManager::tap(std::string position, bool saveToFile) {
-    if (Generic::getInstance()->generateRandomNumber()) {
-        uimpatienceClompainNotification(true);
-    }
+
+    /*if (Generic::getInstance()->generateRandomNumber()) {
+        //uimpatienceClompainNotification(true);
+    }*/
     std::string cmd = "adb shell input tap " + position;
     std::cout << cmd << std::endl;
     popen(cmd.c_str(), "r");
     if (saveToFile) {
         Generic::getInstance()->writeToFile("tap");
     }
-    responseTime.calculateResponseTime(this->governor);
+    long t = responseTime.calculateResponseTime(this->governor);
+
+	if(this->setup)
+	{
+		Generic::getInstance()->writePerfFile(t);
+	}
+
+	checkImpatience(t);
 }
 
 // Not using tap and swipe because it could lead to a loop where each tap of
 // ComplainNotification Could result in more complaining
 void AdbManager::uimpatienceClompainNotification(bool saveToFile) {
-    std::string swipe = "adb shell input swipe 884 7 884 630 100";
+
+    std::string swipe = "adb shell input swipe 884 7 884 1530 1000";
     std::string tap = "adb shell input tap 851 519";
     popen(swipe.c_str(), "r");
     Generic::getInstance()->writeToFile("swipeComplain");
@@ -94,9 +107,10 @@ void AdbManager::uimpatienceClompainNotification(bool saveToFile) {
 
 void AdbManager::swipe(std::string from, std::string to, int time,
                        bool saveToFile) {
-    if (Generic::getInstance()->generateRandomNumber()) {
+    /*if (Generic::getInstance()->generateRandomNumber()) {
         uimpatienceClompainNotification(true);
-    }
+    }*/
+
     std::string cmd = "";
     if (time != 0) {
         cmd = "adb shell input swipe " + from + " " + to + " " +
@@ -109,13 +123,25 @@ void AdbManager::swipe(std::string from, std::string to, int time,
         Generic::getInstance()->writeToFile("swipe");
     }
     popen(cmd.c_str(), "r");
-    responseTime.calculateResponseTime(this->governor);
+    long t = responseTime.calculateResponseTime(this->governor);
+	
+
+	if(this->setup)
+	{
+		Generic::getInstance()->writePerfFile(t);
+	}
+	
+	checkImpatience(t);
+	
 }
 
+
+
 void AdbManager::typeWithKeyboard(std::string text, bool saveToFile) {
-    if (Generic::getInstance()->generateRandomNumber()) {
-        uimpatienceClompainNotification(true);
-    }
+    /*if (Generic::getInstance()->generateRandomNumber()) {
+        //uimpatienceClompainNotification(true);
+    }*/
+
     std::string cmd = "";
     for (char const& c : text) {
         if (isspace(c)) {
@@ -129,8 +155,16 @@ void AdbManager::typeWithKeyboard(std::string text, bool saveToFile) {
         }
         std::cout << "typing " << c << std::endl;
         popen(cmd.c_str(), "r");
-        Generic::getInstance()->sleep(600);
-        // responseTime.calculateResponseTime();
+        //Generic::getInstance()->sleep(600);
+        long t = responseTime.calculateResponseTime(this->governor);
+
+	if(this->setup)
+	{
+		Generic::getInstance()->writePerfFile(t);
+	}
+	
+	checkImpatience(t);
+	
     }
 }
 
@@ -256,3 +290,16 @@ void AdbManager::setGovernorInUserImpatienceApp(
     }
     Generic::getInstance()->sleep(4000);
 }
+
+void AdbManager::checkImpatience(long time)
+{
+	if(Generic::getInstance()->comparePerf(time))
+	{
+		
+		//std::cout << "User complained after tap" <<std::endl;	
+		uimpatienceClompainNotification(true);
+		
+	}
+}
+
+

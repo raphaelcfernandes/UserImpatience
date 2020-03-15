@@ -3,11 +3,17 @@
 ResponseTime::ResponseTime() {}
 ResponseTime::~ResponseTime() {}
 
-int ResponseTime::calculateResponseTime(std::string governor) {
+long ResponseTime::calculateResponseTime(std::string governor) {
     int PREV_TOTAL = 0, PREV_IDLE = 0, TOTAL = 100, DIFF_USAGE = 100, cont = 0,
         pos = 0;
     int IDLE = 0, DIFF_IDLE = 0, DIFF_TOTAL = 0, media = 0;
     std::string text = "";
+
+	struct timespec ts;
+	timespec_get(&ts, TIME_UTC);
+	long start_s = ts.tv_sec;
+	long start_n = ts.tv_nsec;
+
     while (DIFF_USAGE > 5) {
         std::string CPU = Generic::getInstance()->GetStdoutFromCommand(
             "adb shell top -d 1 -n 1 -m 1");
@@ -26,5 +32,14 @@ int ResponseTime::calculateResponseTime(std::string governor) {
             break;
         }
     }
-    return cont - 2;
+
+	timespec_get(&ts, TIME_UTC);
+	long secs = ts.tv_sec - start_s;
+	long convToNano = secs * pow(10, 9);
+	long result = (ts.tv_nsec - start_n) + convToNano;
+	std::cout << "seconds: " << secs << std::endl;
+	std::cout << "nanoseconds: " << result << std::endl;
+	
+
+    return secs;
 }
