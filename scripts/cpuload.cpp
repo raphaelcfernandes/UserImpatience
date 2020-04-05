@@ -42,9 +42,12 @@ int main(int argc, char *argv[]) {
             decreaseCpuFrequency, increaseCpuF, userImpatienceLevel, device);
     } else {
 	
-	if(cmd == "setup")
+	/*Initial Setup for testing applications
+	Run only once to create performance files
+	Rerun if there is a change that will impact user wait time
+	*/
+	if(cmd == "setup")	
 	{
-	
 		AdbManager::getInstance()->setup = true;
 		governor = "userspace";
 		AdbManager::getInstance()->governor = governor;
@@ -57,12 +60,13 @@ int main(int argc, char *argv[]) {
 		userImpatienceLevel = "0";
        		AdbManager::getInstance()->setGovernorInUserImpatienceApp(governor, 
 			timeToReadTA, decreaseCpuInterval, decreaseCpuFrequency, 
-			increaseCpuF, userImpatienceLevel, device);	
+			increaseCpuF, userImpatienceLevel, device);
+
+		/*Loop through each script to create performance file for each app*/	
 		int i = 0;
 		for(i = 0; i < 5; i++)
 		{
-			std::cout << "App: " << apps[i] << std::endl;	
-			//Generic::getInstance()->createFile(governor, apps[i], iteration, device);
+			std::cout << "App: " << apps[i] << std::endl;
 			Generic::getInstance()->openToWritePerfFile(apps[i]);
 			if (apps[i] == "gmail") {
 				Gmail g;
@@ -80,8 +84,6 @@ int main(int argc, char *argv[]) {
 				Photos photos;
 				photos.photosScript(device);
 			}
-
-			//Generic::getInstance()->file.close();
 			Generic::getInstance()->closePerfFile();
 		}
 	}
@@ -114,6 +116,8 @@ int main(int argc, char *argv[]) {
 		        Generic::getInstance()->setUserComplaintThreshold(AdbManager::getInstance()->uimpatienceLevel);
 			cout << "test: " << timeToReadTA << endl;
 		        Generic::getInstance()->createFile(governor, app, iteration, device, timeToReadTA, decreaseCpuInterval, decreaseCpuFrequency, increaseCpuF, userImpatienceLevel);
+
+			Generic::getInstance()->set_frequency_log(governor, app, iteration, timeToReadTA, decreaseCpuInterval, decreaseCpuFrequency, increaseCpuF, userImpatienceLevel);
 		    } else {
 		        Generic::getInstance()->createFile(governor, app, iteration,
 		                                           device);
