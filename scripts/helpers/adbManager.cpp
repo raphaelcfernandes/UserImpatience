@@ -95,6 +95,8 @@ void AdbManager::tap(std::string position, bool saveToFile) {
 // ComplainNotification Could result in more complaining
 void AdbManager::uimpatienceClompainNotification(bool saveToFile) {
 
+	Generic::getInstance()->write_frequency();	//Write frequency at which user complained
+
     std::string swipe = "adb shell input swipe 884 7 884 1530 1000";
     std::string tap = "adb shell input tap 851 519";
     popen(swipe.c_str(), "r");
@@ -102,7 +104,7 @@ void AdbManager::uimpatienceClompainNotification(bool saveToFile) {
     responseTime.calculateResponseTime(this->governor);
     popen(tap.c_str(), "r");
     Generic::getInstance()->writeToFile("tapComplain");
-    responseTime.calculateResponseTime(this->governor);
+    responseTime.calculateResponseTime(this->governor);	
 }
 
 void AdbManager::swipe(std::string from, std::string to, int time,
@@ -291,13 +293,14 @@ void AdbManager::setGovernorInUserImpatienceApp(
     Generic::getInstance()->sleep(4000);
 }
 
+/*Check if user is impatient*/
 void AdbManager::checkImpatience(long time)
 {
-	if(Generic::getInstance()->comparePerf(time))
+	if(Generic::getInstance()->comparePerf(time))	//If impatient
 	{
 		
 		//std::cout << "User complained after tap" <<std::endl;	
-		uimpatienceClompainNotification(true);
+		uimpatienceClompainNotification(true);	//send complaint notification
 		
 	}
 }
