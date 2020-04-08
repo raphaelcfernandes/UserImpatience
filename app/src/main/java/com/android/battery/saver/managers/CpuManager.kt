@@ -1,5 +1,8 @@
 package com.android.battery.saver.managers
 
+import android.content.Context
+import android.content.ContextWrapper
+import android.os.Environment
 import android.util.Log
 import com.android.battery.saver.SearchAlgorithms
 import com.android.battery.saver.activities.MainActivity
@@ -17,12 +20,15 @@ import com.android.battery.saver.model.UserComplainModel
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.lang.Exception
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.ceil
 import kotlin.random.Random
+
 
 object CpuManager {
     private const val pathToCpu: String = "/sys/devices/system/cpu/cpu"
@@ -65,13 +71,18 @@ object CpuManager {
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     fun onCpuEvent(onCpuScaleAllUpEvent: OnCpuScaleAllUpEvent) {
+
         setThreshold()
+
+
+
         scaleAllCpuUp(onCpuScaleAllUpEvent.increase)
         val userComplainModel = UserComplainModel(onCpuScaleAllUpEvent.currentApp, getAllCoresFrequencies(),
                 getAllCoresThreshold(), onCpuScaleAllUpEvent.readInterval, onCpuScaleAllUpEvent.iteration,
                 onCpuScaleAllUpEvent.decreaseCpuInterval, onCpuScaleAllUpEvent.decreaseCpuFrequency,
                 onCpuScaleAllUpEvent.increaseCpuFrequency, onCpuScaleAllUpEvent.UImpatienceLevel)
         UserComplainDAOImpl(MainActivity.appContext).insert(userComplainModel)
+
     }
 
     @Synchronized
@@ -209,6 +220,11 @@ object CpuManager {
     }
 
     @Synchronized
+    fun getFreqPosFromCore(core: Int): Int {
+        return cpuCores[core]!!.freqPos
+    }
+
+    @Synchronized
     fun getAllCoresFrequencies(): ArrayList<Int> {
         val arr = ArrayList<Int>()
         for (i in 0 until numberOfCores) {
@@ -338,7 +354,7 @@ object CpuManager {
         // In this case, ALL cores will have the same speed, then get the freqPos of any core
         // Will lead to the same freqPos for ALL cores
         val freqPos = cpuCores[0]!!.freqPos
-        if (!configHasThreshold() || (0 until 10).random() < 1) {
+        if (!configHasThreshold() /*|| (0 until 10).random() < 1*/) {
             if (freqPos - amountOfFrequencyToReduce >= 0) {
                 for (i in 0 until numberOfCores) {
                     setCoreFrequency(i, cpuCores[0]!!.frequencies[freqPos - amountOfFrequencyToReduce])
@@ -358,6 +374,7 @@ object CpuManager {
     @Synchronized
     private fun scaleAllCpuUp(increase: Int): Boolean {
         val freqPos = cpuCores[0]!!.freqPos
+	
         if (freqPos + increase < cpuCores[0]!!.frequencies.size) {
             for (i in 0 until numberOfCores) {
                 setCoreFrequency(i, cpuCores[0]!!.frequencies[freqPos + increase])
@@ -377,7 +394,7 @@ object CpuManager {
     fun scaleCpuDown(amountOfFrequencyToReduce: Int) {
         //Todo: check if cpu can decrease before reaching threshold
         val r = Random.nextInt(0, 11)
-        if (!configHasThreshold() || r < 9) {
+        if (!configHasThreshold() /*|| r < 9*/) {
             var reduceFromNext = false
             var differBetweenCores = 0
             var i = numberOfCores - 1
