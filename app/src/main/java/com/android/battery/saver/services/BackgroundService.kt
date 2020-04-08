@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Environment
 import android.os.IBinder
 import android.util.Log
 import com.android.battery.saver.dao.UsageInfoDAOImpl
@@ -21,6 +22,10 @@ import org.greenrobot.eventbus.EventBus
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit.SECONDS
+import kotlin.math.ceil
+import java.io.File
+import java.io.FileOutputStream
+import java.io.PrintWriter
 
 class BackgroundService : Service() {
     //Objects
@@ -101,7 +106,7 @@ class BackgroundService : Service() {
                         // cpu freqs, iteration, timestamp, app, readTa, decreaseCpuInterval, decreaseCpuFreq, IncreaseCpuFreq, uimpatiencelevel
                         if (clock >= decreaseCPUInterval) {
                             EventBus.getDefault().post(OnCpuScaleAllDownEvent(currentApp, readTAinterval,
-                                    iteration - 1, decreaseCPUInterval, decreaseCPUFrequency,
+                                    iteration - 1, getDecreaseFrequency(), decreaseCPUFrequency,
                                     increaseCpuAfterComplaining, uimpatienceLevel))
                             clock = 0
                         }
@@ -112,6 +117,16 @@ class BackgroundService : Service() {
 
         scheduler.scheduleAtFixedRate(runnable, 0, readTAinterval.toLong(), SECONDS)
         return START_NOT_STICKY
+    }
+
+    private fun getDecreaseFrequency(): Int {
+        var currentCoreFreq = CpuManager.getFrequencyFromCore(0)
+        var amountToDecrease = ((currentCoreFreq - decreaseCPUFrequency) / 2)
+        if (amountToDecrease < 3) {
+            return 1
+        } else {
+            return amountToDecrease
+        }
     }
 
     private fun checkLastAppState(lastApp: String): Boolean {
@@ -169,6 +184,24 @@ class BackgroundService : Service() {
             }
             if (intent.action == "com.android.battery.saver.USER_COMPLAINED") {
                 println("Increasing CPU freq")
+
+                try {
+                    val dir = context.filesDir
+                    val name = lastApp + ".txt"
+                    val log = File(dir, name)
+                    FileOutputStream(log).use {
+                        log.appendText(CpuManager.getFreqPosFromCore(0).toString() + "\n")
+                    }
+                }
+                catch(e: Exception)
+                {
+
+                }
+
+
+
+
+
                 EventBus.getDefault().post(OnCpuScaleAllUpEvent(increaseCpuAfterComplaining, currentApp,
                         readTAinterval, iteration - 1, decreaseCPUInterval, decreaseCPUFrequency,
                         increaseCpuAfterComplaining, uimpatienceLevel))
