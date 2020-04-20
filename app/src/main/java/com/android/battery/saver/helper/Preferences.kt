@@ -15,6 +15,7 @@ object Preferences {
     private const val KEY_PREFS_INCREASE_CPU_MARGIN = "increaseCpuMargin"
     private const val KEY_PREFS_IMPATIENCE_LEVEL = "impatienceLevel"
     private const val KEY_PREFS_ITERATION = "iteration"
+    private const val KEY_PREFS_TRAIN = "training"
 
     fun setIteration(context: Context, iteration: Int) {
         val sharedPref: SharedPreferences.Editor =
@@ -82,6 +83,12 @@ object Preferences {
         sharedPref.apply()
     }
 
+    fun setTrainer(context: Context, state: Boolean) {
+        val sharedPref : SharedPreferences.Editor = context.getSharedPreferences(SHARED_PREFS_FILE_NAME, Context.MODE_PRIVATE).edit()
+        sharedPref.putBoolean(KEY_PREFS_TRAIN, state)
+        sharedPref.apply()
+    }
+
     fun getImpatienceLevel(context: Context): Int {
         return context.getSharedPreferences(SHARED_PREFS_FILE_NAME, Context.MODE_PRIVATE).getInt(
                 KEY_PREFS_IMPATIENCE_LEVEL, -1)
@@ -110,6 +117,10 @@ object Preferences {
     fun getDecreaseCPUInterval(context: Context): Int {
         return context.getSharedPreferences(SHARED_PREFS_FILE_NAME, Context.MODE_PRIVATE).getInt(
                 KEY_PREFS_DECREASE_CPU_TIMEINTERVAL, 0)
+    }
+
+    fun getTraining(context: Context):  Boolean {
+        return context.getSharedPreferences(SHARED_PREFS_FILE_NAME, Context.MODE_PRIVATE).getBoolean(KEY_PREFS_TRAIN, false)
     }
 
     fun clearPreferences(context: Context) {

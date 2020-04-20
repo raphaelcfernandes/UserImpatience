@@ -20,6 +20,7 @@ class ConfigurationFragment : Fragment() {
         val amountToIncrease = view.increaseFrequency
         val reduceFrequencyAmount = view.reduceFrequency
         val impatienceLevel = view.impatienceLevel
+        val training = view.training
         val spinner: Spinner = view.findViewById(R.id.governors_spinner)
         spinner.onItemSelectedListener = SpinnerActivity(view, context!!)
         val button = view.save
@@ -36,6 +37,7 @@ class ConfigurationFragment : Fragment() {
                 Preferences.setDecreaseCPUFrequency(context!!,
                         reduceFrequencyAmount.editText?.text.toString().toInt())
                 Preferences.setImpatienceLevel(context!!, impatienceLevel.editText?.text.toString().toInt())
+                Preferences.setTrainer(context!!, training.isChecked)
                 Preferences.setIteration(context!!, 0)
             }
 
