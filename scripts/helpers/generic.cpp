@@ -1,6 +1,7 @@
 #include "generic.hpp"
 #include "adbManager.hpp"
 
+
 Generic* Generic::instance = NULL;
 
 Generic* Generic::getInstance() {
@@ -17,23 +18,38 @@ int Generic::getuserComplaintThreshold() {
 
 void Generic::setUserComplaintThreshold(int userImpatienceLevel) {
     // Less complains
-    if (userImpatienceLevel == 0) {
+	if(userImpatienceLevel <= 0)
+	{
+	
+	}
+	else
+	{
+		int set = 100 / userImpatienceLevel;
+		this->userComplaintThreshold = set;
+	}
+
+    /*if (userImpatienceLevel == 0) {
         this->userComplaintThreshold = 10;
     } else if (userImpatienceLevel == 1) {
         this->userComplaintThreshold = 30;
     } else if (userImpatienceLevel == 2) {
         this->userComplaintThreshold = 40;
     }
+	*/
 }
 
 bool Generic::generateRandomNumber() {
-    int random = std::rand() / ((RAND_MAX + 1u) / 100);
+
+	bool result = false;
+    int random = std::rand() % 1000 + 1;
     if (random < this->userComplaintThreshold) {
-        this->userComplaintThreshold =
-            (this->userComplaintThreshold * this->userComplaintThreshold) / 100;
-        return true;
+        /*this->userComplaintThreshold =
+            (this->userComplaintThreshold * this->userComplaintThreshold) / 100;*/
+        result = true;
     }
-    return false;
+
+	
+    return result;
 }
 
 std::time_t Generic::getCurrentTimestamp() {

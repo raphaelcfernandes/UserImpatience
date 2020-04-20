@@ -27,24 +27,31 @@ void AdbManager::configureLocationByDevice(std::string device) {
 void AdbManager::openAppWithShellMonkey(std::string app) {
     // Package name can be gathered with:
     // adb shell pm list packages -f | grep "spotify/chrome/gm/photos/etc..."
+	std::string cmd = "";
     if (app == "chrome") {
+	cmd = "adb shell monkey -p com.android.chrome -c android.intent.category.LAUNCHER 1";
         app = "com.android.chrome";
     } else if (app == "spotify") {
+	cmd = "adb shell monkey -p com.spotify.music -c android.intent.category.LAUNCHER 1";
         app = "com.spotify.music";
     } else if (app == "photos") {
+	cmd = "adb shell monkey -p com.google.android.apps.photos -c android.intent.category.LAUNCHER 1";
         app = "com.google.android.apps.photos";
     } else if (app == "gmail") {
+	cmd = "adb shell monkey -p com.google.android.gm -c android.intent.category.LAUNCHER 1";
         app = "com.google.android.gm";
     } else if (app == "battery") {
+	cmd = "adb shell monkey -p com.android.battery.saver -c android.intent.category.LAUNCHER 1";
         app = "com.android.battery.saver";
     } else if (app == "youtube") {
+	cmd = "adb shell am start -a com.google.android.youtube.action.open.search";
 	app = "com.google.android.youtube";
     }	
 	
 	
-    std::string cmd = "adb shell monkey -p " + app +
+    /*std::string cmd = "adb shell monkey -p " + app +
                       " -c "
-                      "android.intent.category.LAUNCHER 1";
+                      "android.intent.category.LAUNCHER 1";*/
     popen(cmd.c_str(), "r");
     responseTime.calculateResponseTime(this->governor);
 }
@@ -296,13 +303,11 @@ void AdbManager::setGovernorInUserImpatienceApp(
 /*Check if user is impatient*/
 void AdbManager::checkImpatience(long time)
 {
-	if(Generic::getInstance()->comparePerf(time))	//If impatient
+	if(Generic::getInstance()->comparePerf(time) || Generic::getInstance()->generateRandomNumber())	//If impatient
 	{
-		
-		//std::cout << "User complained after tap" <<std::endl;	
-		uimpatienceClompainNotification(true);	//send complaint notification
-		
+		uimpatienceClompainNotification(true);	//send complaint notification		
 	}
+	
 }
 
 
