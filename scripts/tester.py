@@ -5,6 +5,7 @@ import time
 import os
 import subprocess
 from subprocess import check_output, CalledProcessError
+import complainmodel
 
 
 class Tester:
@@ -24,7 +25,7 @@ class Tester:
     decreaseCPUInterval = ["2"]
     # Amount of frequency to reduce after A.time has passed
     # decreaseCPUFrequency = ["2", "4", "8"]
-    decreaseCPUFrequency = ["1"]
+    #decreaseCPUFrequency = complainmodel.complainpredict.getPrediction()
     #(Max - current)/C
     # Where C is the following measurements
     # marginToIncreaseCpuFrequency = ["2", "4", "8"]
@@ -33,6 +34,8 @@ class Tester:
     # 5 is the user that complains with high frequency
     # userImpatienceLevel = [0, 1, 2]
     userImpatienceLevel = [1]
+    decreaseCPUFrequency = complainmodel.complainpredict.getPrediction('chrome2.txt')
+
     dataQ = DataQProcess()
     queue = Queue()
 

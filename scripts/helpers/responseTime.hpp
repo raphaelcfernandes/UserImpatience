@@ -3,13 +3,17 @@
 
 #include <chrono>
 #include <thread>
+#include <iostream>
+#include <time.h>
+#include <math.h>
 #include "generic.hpp"
+
 
 class ResponseTime {
  public:
   ResponseTime();
   virtual ~ResponseTime();
-  int calculateResponseTime(std::string governor);
+  long calculateResponseTime(std::string governor);
 };
 
 #endif
