@@ -52,6 +52,7 @@ class BackgroundService : Service() {
     private var iteration = 0
     private var training = false
 
+    /*Frequency position vector logs for apps*/
     private var youtube_log = Vector<Int>()
     private var chrome_log = Vector<Int>()
     private var photos_log = Vector<Int>()
@@ -194,8 +195,12 @@ class BackgroundService : Service() {
             if (intent.action == "com.android.battery.saver.USER_COMPLAINED") {
                 println("Increasing CPU freq")
 
+		    /*While the app is running frequency position is kept track of in a vector*/
+		    /*This is done when the option for training is not selected*/
                 if(!training) {
 			
+			/*There is an inconsistency in if current or last app 
+			is the app that was complained in, so both are checked.*/
                     if(currentApp == "com.android.chrome" || lastApp == "com.android.chrome")
                     {
                         chrome_log.add(CpuManager.getFreqPosFromCore(0))
@@ -237,6 +242,9 @@ class BackgroundService : Service() {
 
     override fun onDestroy() {
 
+	    /*When the service is deactivated or the app is ended,
+	    the vector logs are written to files that are stored within 
+	    the application's data directory*/  
         try {
             val dir = filesDir
             if(chrome_log.size > 0) {
