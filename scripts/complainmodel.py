@@ -11,6 +11,7 @@ import numpy as np
 #from sklearn.model_selection import train_test_split
 import os
 import math
+From tensorflow import lite
 
 
 
@@ -64,6 +65,36 @@ class complainpredict:
         history = model.fit(X, Y,
                             batch_size=batch_size,
                             epochs=epochs)
+	model.save('kerasmodel.h5')
+
+	converter = lite.TFLiteConverter.from_keras_model_file('kerasmodel.h5')
+	tflite_model = converter.convert()
+	f = open('litemodel.tflite', 'wb')
+	f.write(tflite_model)
+
+	 
+
+	 
+
+	def freeze_session(session, keep_var_names=None, output_names=None, clear_devices=True):
+	    graph = session.graph
+	    with graph.as_default():
+		freeze_var_names = list(set(v.op.name for v in tf.global_variables()).difference(keep_var_names or []))
+		output_names = output_names or []
+		output_names += [v.op.name for v in tf.global_variables()]
+		input_graph_def = graph.as_graph_def()
+		if clear_devices:
+		    for node in input_graph_def.node:
+		        node.device = ""
+		frozen_graph = tf.graph_util.convert_variables_to_constants(
+		    session, input_graph_def, output_names, freeze_var_names)
+		return frozen_graph
+
+	frozen_graph = freeze_session(K.get_session(),
+		                       output_names=[out.op.name for out in model.outputs])
+
+	tf.io.write_graph(frozen_graph, "", "my_model.pb", as_text=False)
+
         #,
         #verbose=1,
         #validation_data=(x_test, y_test)
